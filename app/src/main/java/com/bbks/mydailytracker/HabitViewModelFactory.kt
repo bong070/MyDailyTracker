@@ -1,0 +1,10 @@
+package com.bbks.mydailytracker
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+
+class HabitViewModelFactory(private val habitDao: HabitDao, private val habitCheckDao: HabitCheckDao) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return HabitViewModel(habitDao, habitCheckDao) as T
+    }
+}
