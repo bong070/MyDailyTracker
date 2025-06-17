@@ -10,4 +10,8 @@ interface HabitCheckDao {
 
     @Query("SELECT * FROM HabitCheck WHERE habitId = :habitId AND date = :date")
     suspend fun getHabitCheck(habitId: Int, date: String): HabitCheck?
+
+    @Query("DELETE FROM habitcheck WHERE habitId = :habitId")
+    suspend fun deleteChecksForHabit(habitId: Int)
+
 }
