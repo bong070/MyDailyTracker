@@ -21,14 +21,13 @@ import java.time.Duration
 @Composable
 fun HabitTrackerScreen(viewModel: HabitViewModel) {
     val habits by viewModel.habits.collectAsState(initial = emptyList())
-    val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyList())
-    val endTime by viewModel.endTime.collectAsState()
+    val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
+    val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
 
     var newHabitName by remember { mutableStateOf("") }
     val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
 
-    val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val scope = rememberCoroutineScope()
 
     if (selectedHabitState.value != null) {
@@ -39,14 +38,11 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
         )
     } else {
         Scaffold(
-            modifier = Modifier
-                .padding(WindowInsets.systemBars.asPaddingValues()),
+            modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues()),
             topBar = {
                 TopBarWithCountdownAndSettings(
                     endTime = endTime,
-                    onSettingsClick = {
-                        showSettings = true
-                    }
+                    onSettingsClick = { showSettings = true }
                 )
             },
             content = { padding ->
@@ -77,16 +73,14 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 
                     LazyColumn {
                         items(habits) { habit ->
-                            val isChecked = habitChecks.any {
-                                it.habitId == habit.id && it.date == todayString
-                            }
+                            val isChecked = habitChecks.containsKey(habit.id)
 
                             HabitItem(
                                 habit = habit,
                                 isChecked = isChecked,
                                 onCheckToggle = {
                                     scope.launch {
-                                        viewModel.toggleHabitCheck(habit, todayString)
+                                        viewModel.toggleHabitCheck(habit)
                                     }
                                 },
                                 onClick = { selectedHabitState.value = habit },
@@ -132,7 +126,10 @@ fun TopBarWithCountdownAndSettings(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = "My Daily Tracker",
                 style = MaterialTheme.typography.headlineSmall,
@@ -154,9 +151,11 @@ fun calculateRemainingTime(endTime: LocalTime): String {
     val now = LocalTime.now()
     val duration = Duration.between(now, endTime)
     return if (!duration.isNegative) {
-        String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutes() % 60, duration.seconds % 60)
+        val hours = duration.toHours()
+        val minutes = duration.toMinutes() % 60
+        val seconds = duration.seconds % 60
+        String.format("%02d:%02d:%02d", hours, minutes, seconds)
     } else {
         "00:00:00"
     }
 }
-

@@ -2,10 +2,9 @@ package com.bbks.mydailytracker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalTime
 
 class HabitViewModel(
@@ -16,47 +15,41 @@ class HabitViewModel(
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
     val habits: StateFlow<List<Habit>> = _habits
 
-    private val _habitChecks = MutableStateFlow<List<HabitCheck>>(emptyList())
-    val habitChecks: StateFlow<List<HabitCheck>> = _habitChecks
+    private val _habitChecks = MutableStateFlow<Map<Int, HabitCheck>>(emptyMap())
+    val habitChecks: StateFlow<Map<Int, HabitCheck>> = _habitChecks
 
     private val _endTime = MutableStateFlow(LocalTime.of(23, 59, 59))
     val endTime: StateFlow<LocalTime> = _endTime
 
-    fun setEndTime(newTime: LocalTime) {
-        _endTime.value = newTime
-    }
+    private val today: String = LocalDate.now().toString()
 
     init {
-        loadHabits()
-        loadHabitChecks()
+        observeHabits()
     }
 
-    private fun loadHabits() {
+    private fun observeHabits() {
         viewModelScope.launch {
-            habitDao.getAllHabits().collect { loaded ->
-                _habits.value = loaded
+            habitDao.getAllHabits().collect { loadedHabits ->
+                _habits.value = loadedHabits
+                refreshHabitChecks(loadedHabits)
             }
         }
     }
 
-    private fun loadHabitChecks() {
+    private fun refreshHabitChecks(habits: List<Habit>) {
         viewModelScope.launch {
-            val allHabits = _habits.value
-            val allChecks = mutableListOf<HabitCheck>()
-            for (habit in allHabits) {
-                val today = java.time.LocalDate.now().toString()
-                habitCheckDao.getHabitCheck(habit.id, today)?.let {
-                    allChecks.add(it)
+            val checks = habits.mapNotNull { habit ->
+                habitCheckDao.getHabitCheck(habit.id, today)?.let { check ->
+                    habit.id to check
                 }
-            }
-            _habitChecks.value = allChecks
+            }.toMap()
+            _habitChecks.value = checks
         }
     }
 
     fun addHabit(name: String) {
         viewModelScope.launch {
             habitDao.insert(Habit(name = name))
-            loadHabits()
         }
     }
 
@@ -64,18 +57,29 @@ class HabitViewModel(
         viewModelScope.launch {
             habitDao.delete(habit)
             habitCheckDao.deleteChecksForHabit(habit.id)
-            loadHabits()
-            loadHabitChecks()
+            _habits.update { it.filterNot { it.id == habit.id } }
+            _habitChecks.update { it - habit.id }
         }
     }
 
-    suspend fun toggleHabitCheck(habit: Habit, date: String) {
-        val existing = habitCheckDao.getHabitCheck(habit.id, date)
-        if (existing == null) {
-            habitCheckDao.insertHabitCheck(HabitCheck(habit.id, date, true))
-        } else {
-            habitCheckDao.deleteChecksForHabit(habit.id)  // 또는 delete(existing)
+    fun toggleHabitCheck(habit: Habit) {
+        viewModelScope.launch {
+            val existing = habitCheckDao.getHabitCheck(habit.id, today)
+            if (existing == null) {
+                val newCheck = HabitCheck(habit.id, today, true)
+                habitCheckDao.insertHabitCheck(newCheck)
+                _habitChecks.update { it + (habit.id to newCheck) }
+            } else {
+                habitCheckDao.deleteChecksForHabit(habit.id)
+                _habitChecks.update { it - habit.id }
+            }
         }
-        loadHabitChecks()
+    }
+
+    fun isHabitChecked(habitId: Int): Boolean =
+        _habitChecks.value.containsKey(habitId)
+
+    fun setEndTime(newTime: LocalTime) {
+        _endTime.value = newTime
     }
 }

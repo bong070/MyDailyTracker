@@ -68,7 +68,7 @@ fun CalendarScreen(
             Button(onClick = {
                 scope.launch {
                     val dateStr = selectedDate.format(formatter)
-                    viewModel.toggleHabitCheck(habit, dateStr)
+                    viewModel.toggleHabitCheck(habit)
                 }
             }) {
                 Text("이 날짜 기록 토글하기")
