@@ -23,7 +23,9 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
     val habits by viewModel.habits.collectAsState(initial = emptyList())
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
-
+    val totalHabits = habits.size
+    val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    val completedCount = habitChecks.values.count { it.date == todayString }
     var newHabitName by remember { mutableStateOf("") }
     val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
@@ -71,6 +73,14 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Text(
+                        text = "오늘 완료: $completedCount / $totalHabits",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+
                     LazyColumn {
                         items(habits) { habit ->
                             val isChecked = habitChecks.containsKey(habit.id)
@@ -115,6 +125,7 @@ fun TopBarWithCountdownAndSettings(
     var remainingTime by remember { mutableStateOf(calculateRemainingTime(endTime)) }
 
     LaunchedEffect(endTime) {
+        println("LaunchedEffect triggered with new endTime: $endTime")
         while (true) {
             remainingTime = calculateRemainingTime(endTime)
             delay(1000L)
@@ -149,13 +160,14 @@ fun TopBarWithCountdownAndSettings(
 
 fun calculateRemainingTime(endTime: LocalTime): String {
     val now = LocalTime.now()
-    val duration = Duration.between(now, endTime)
-    return if (!duration.isNegative) {
-        val hours = duration.toHours()
-        val minutes = duration.toMinutes() % 60
-        val seconds = duration.seconds % 60
-        String.format("%02d:%02d:%02d", hours, minutes, seconds)
-    } else {
-        "00:00:00"
+    var duration = Duration.between(now, endTime)
+
+    if (duration.isNegative) {
+        duration = duration.plusHours(24)
     }
+
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes() % 60
+    val seconds = duration.seconds % 60
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }
