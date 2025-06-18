@@ -2,24 +2,14 @@ package com.bbks.mydailytracker
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 
 @Composable
 fun HabitItem(
@@ -30,6 +20,13 @@ fun HabitItem(
     onRemove: (Habit) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
+
+    val textColor = if (isChecked) {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    val textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
 
     if (showDialog) {
         AlertDialog(
@@ -52,24 +49,39 @@ fun HabitItem(
         )
     }
 
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface // 기본 배경색
+        )
     ) {
         Row(
-            modifier = Modifier.weight(1f).clickable { onClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(checked = isChecked, onCheckedChange = { onCheckToggle() })
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(habit.name)
-        }
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onClick() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = isChecked, onCheckedChange = { onCheckToggle() })
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = habit.name,
+                    color = textColor,
+                    textDecoration = textDecoration
+                )
+            }
 
-        IconButton(onClick = { showDialog = true }) {
-            Icon(Icons.Default.Delete, contentDescription = "삭제")
+            IconButton(onClick = { showDialog = true }) {
+                Icon(Icons.Default.Delete, contentDescription = "삭제")
+            }
         }
     }
 }

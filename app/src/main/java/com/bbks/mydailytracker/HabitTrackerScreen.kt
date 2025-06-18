@@ -1,5 +1,6 @@
 package com.bbks.mydailytracker
 
+import SortOption
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -20,15 +23,15 @@ import java.time.Duration
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitTrackerScreen(viewModel: HabitViewModel) {
-    val habits by viewModel.habits.collectAsState(initial = emptyList())
+    val sortedHabits by viewModel.sortedHabits.collectAsState()
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
-    val totalHabits = habits.size
     val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val completedCount = habitChecks.values.count { it.date == todayString }
     var newHabitName by remember { mutableStateOf("") }
     val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
+    val sortOption by viewModel.sortOption.collectAsState()
 
     val scope = rememberCoroutineScope()
 
@@ -73,17 +76,26 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = "오늘 완료: $completedCount / $totalHabits",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .align(Alignment.CenterHorizontally)
-                    )
+                    val totalCount = sortedHabits.size
+
+                    if (totalCount > 0) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("오늘 완료: $completedCount / $totalCount", fontWeight = FontWeight.SemiBold)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LinearProgressIndicator(
+                                progress = completedCount / totalCount.toFloat(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                color = Color(0xFF4CAF50)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
                     LazyColumn {
-                        items(habits) { habit ->
-                            val isChecked = habitChecks.containsKey(habit.id)
+                        items(sortedHabits) { habit ->
+                            val isChecked = habitChecks[habit.id]?.isCompleted == true && habitChecks[habit.id]?.date == todayString
 
                             HabitItem(
                                 habit = habit,
@@ -102,13 +114,16 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
             }
         )
 
+        val sortOption by viewModel.sortOption.collectAsState()
+
         if (showSettings) {
             SettingsDialog(
                 onDismiss = { showSettings = false },
-                onSave = { time, alarm, autoDelete ->
+                initialSortOption = sortOption,
+                onSave = { time, alarm, autoDelete, selectedSort ->
                     val (hour, minute) = time
-                    val newEndTime = LocalTime.of(hour, minute)
-                    viewModel.setEndTime(newEndTime)
+                    viewModel.setEndTime(LocalTime.of(hour, minute))
+                    viewModel.setSortOption(selectedSort)
                     showSettings = false
                 }
             )
@@ -170,4 +185,27 @@ fun calculateRemainingTime(endTime: LocalTime): String {
     val minutes = duration.toMinutes() % 60
     val seconds = duration.seconds % 60
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+}
+
+@Composable
+fun SortMenu(current: SortOption, onSelect: (SortOption) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text("정렬: ${current.name}")
+        }
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            SortOption.values().forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.name) },
+                    onClick = {
+                        expanded = false
+                        onSelect(option)
+                    }
+                )
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.bbks.mydailytracker
 
+import SortOption
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
@@ -21,7 +22,18 @@ class HabitViewModel(
     private val _endTime = MutableStateFlow(LocalTime.of(23, 59, 59))
     val endTime: StateFlow<LocalTime> = _endTime
 
+    private val _sortOption = MutableStateFlow(SortOption.ALPHABETICAL)
+    val sortOption: StateFlow<SortOption> = _sortOption
+
     private val today: String = LocalDate.now().toString()
+
+    val sortedHabits = combine(habits, sortOption) { habitList, sort ->
+        when (sort) {
+            SortOption.ALPHABETICAL -> habitList.sortedBy { it.name }
+            SortOption.COMPLETED_FIRST -> habitList.sortedByDescending { habitChecks.value.containsKey(it.id) }
+            SortOption.RECENT -> habitList.sortedByDescending { it.id }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
         observeHabits()
@@ -81,5 +93,9 @@ class HabitViewModel(
 
     fun setEndTime(newTime: LocalTime) {
         _endTime.value = newTime
+    }
+
+    fun setSortOption(option: SortOption) {
+        _sortOption.value = option
     }
 }

@@ -1,5 +1,6 @@
 package com.bbks.mydailytracker
 
+import SortOption
 import android.app.TimePickerDialog
 import android.content.Context
 import androidx.compose.foundation.layout.Column
@@ -20,19 +21,21 @@ fun SettingsDialog(
     initialDayEndTime: Pair<Int, Int> = 23 to 59, // (hour, minute)
     initialAlarmEnabled: Boolean = false,
     initialAutoDelete: Boolean = false,
-    onSave: (dayEndTime: Pair<Int, Int>, alarmEnabled: Boolean, autoDelete: Boolean) -> Unit
+    initialSortOption: SortOption = SortOption.ALPHABETICAL,
+    onSave: (dayEndTime: Pair<Int, Int>, alarmEnabled: Boolean, autoDelete: Boolean, SortOption) -> Unit
 ) {
     val context = LocalContext.current
 
     var dayEndTime by remember { mutableStateOf(initialDayEndTime) }
     var alarmEnabled by remember { mutableStateOf(initialAlarmEnabled) }
     var autoDelete by remember { mutableStateOf(initialAutoDelete) }
+    var selectedSortOption by remember { mutableStateOf(initialSortOption) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = {
-                onSave(dayEndTime, alarmEnabled, autoDelete)
+                onSave(dayEndTime, alarmEnabled, autoDelete, selectedSortOption)
                 onDismiss()
             }) {
                 Text("저장")
@@ -56,6 +59,14 @@ fun SettingsDialog(
                 }) {
                     Text("시간 선택")
                 }
+
+                Text("정렬 방식")
+                Spacer(modifier = Modifier.height(4.dp))
+                DropdownMenuBox(
+                    options = SortOption.values().toList(),
+                    selected = selectedSortOption,
+                    onSelect = { selectedSortOption = it }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -86,4 +97,29 @@ fun showTimePickerDialog(context: Context, onTimeSelected: (Pair<Int, Int>) -> U
         },
         hour, minute, true
     ).show()
+}
+
+@Composable
+fun DropdownMenuBox(
+    options: List<SortOption>,
+    selected: SortOption,
+    onSelect: (SortOption) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    OutlinedButton(onClick = { expanded = true }) {
+        Text("정렬: ${selected.name}")
+    }
+
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        options.forEach { option ->
+            DropdownMenuItem(
+                text = { Text(option.name) },
+                onClick = {
+                    onSelect(option)
+                    expanded = false
+                }
+            )
+        }
+    }
 }
