@@ -3,6 +3,8 @@ package com.bbks.mydailytracker
 import SortOption
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bbks.mydailytracker.data.SettingsRepository
+import com.bbks.mydailytracker.data.UserPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -10,7 +12,8 @@ import java.time.LocalTime
 
 class HabitViewModel(
     private val habitDao: HabitDao,
-    private val habitCheckDao: HabitCheckDao
+    private val habitCheckDao: HabitCheckDao,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
@@ -25,6 +28,12 @@ class HabitViewModel(
     private val _sortOption = MutableStateFlow(SortOption.ALPHABETICAL)
     val sortOption: StateFlow<SortOption> = _sortOption
 
+    private val _alarmEnabled = MutableStateFlow(false)
+    val alarmEnabled: StateFlow<Boolean> = _alarmEnabled
+
+    private val _autoDelete = MutableStateFlow(false)
+    val autoDelete: StateFlow<Boolean> = _autoDelete
+
     private val today: String = LocalDate.now().toString()
 
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
@@ -37,6 +46,7 @@ class HabitViewModel(
 
     init {
         observeHabits()
+        observePreferences()
     }
 
     private fun observeHabits() {
@@ -44,6 +54,17 @@ class HabitViewModel(
             habitDao.getAllHabits().collect { loadedHabits ->
                 _habits.value = loadedHabits
                 refreshHabitChecks(loadedHabits)
+            }
+        }
+    }
+
+    private fun observePreferences() {
+        viewModelScope.launch {
+            settingsRepository.userPreferencesFlow.collect { prefs ->
+                _endTime.value = LocalTime.of(prefs.endHour, prefs.endMinute)
+                _alarmEnabled.value = prefs.alarmEnabled
+                _autoDelete.value = prefs.autoDelete
+                _sortOption.value = prefs.sortOption
             }
         }
     }
@@ -93,9 +114,42 @@ class HabitViewModel(
 
     fun setEndTime(newTime: LocalTime) {
         _endTime.value = newTime
+        viewModelScope.launch {
+            settingsRepository.updateEndTime(newTime)
+        }
     }
 
     fun setSortOption(option: SortOption) {
         _sortOption.value = option
+        viewModelScope.launch {
+            settingsRepository.updateSortOption(option)
+        }
+    }
+
+    fun setAlarmEnabled(value: Boolean) {
+        _alarmEnabled.value = value
+        viewModelScope.launch {
+            settingsRepository.updateAlarmEnabled(value)
+        }
+    }
+
+    fun setAutoDelete(value: Boolean) {
+        _autoDelete.value = value
+        viewModelScope.launch {
+            settingsRepository.updateAutoDelete(value)
+        }
+    }
+
+    fun saveSettings(endTime: LocalTime, alarmEnabled: Boolean, autoDelete: Boolean, sortOption: SortOption) {
+        viewModelScope.launch {
+            val prefs = UserPreferences(
+                endHour = endTime.hour,
+                endMinute = endTime.minute,
+                alarmEnabled = alarmEnabled,
+                autoDelete = autoDelete,
+                sortOption = sortOption
+            )
+            settingsRepository.savePreferences(prefs)
+        }
     }
 }

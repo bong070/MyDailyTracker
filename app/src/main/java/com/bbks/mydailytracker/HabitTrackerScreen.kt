@@ -33,14 +33,17 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
     val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
     val sortOption by viewModel.sortOption.collectAsState()
+    val alarmEnabled by viewModel.alarmEnabled.collectAsState()
+    val autoDelete by viewModel.autoDelete.collectAsState()
+
 
     val scope = rememberCoroutineScope()
 
     if (selectedHabitState.value != null) {
-        CalendarScreen(
-            viewModel = viewModel,
+        HabitDetailScreen(
             habit = selectedHabitState.value!!,
-            onBack = { selectedHabitState.value = null }
+            onBack = { selectedHabitState.value = null },
+            viewModel = viewModel
         )
     } else {
         Scaffold(
@@ -50,6 +53,9 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
                     endTime = endTime,
                     onSettingsClick = { showSettings = true }
                 )
+            },
+            bottomBar = {
+                AdMobBanner()
             },
             content = { padding ->
                 Column(
@@ -134,15 +140,18 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
             }
         )
 
-        val sortOption by viewModel.sortOption.collectAsState()
-
         if (showSettings) {
             SettingsDialog(
                 onDismiss = { showSettings = false },
+                initialDayEndTime = endTime.run { hour to minute },
+                initialAlarmEnabled = alarmEnabled,
+                initialAutoDelete = autoDelete,
                 initialSortOption = sortOption,
                 onSave = { time, alarm, autoDelete, selectedSort ->
                     val (hour, minute) = time
                     viewModel.setEndTime(LocalTime.of(hour, minute))
+                    viewModel.setAlarmEnabled(alarm)
+                    viewModel.setAutoDelete(autoDelete)
                     viewModel.setSortOption(selectedSort)
                     showSettings = false
                 }

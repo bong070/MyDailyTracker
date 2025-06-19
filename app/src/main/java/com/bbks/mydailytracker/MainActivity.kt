@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
+import com.bbks.mydailytracker.data.SettingsRepository
 import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
 import com.google.android.gms.ads.MobileAds
 
@@ -23,7 +24,8 @@ class MainActivity : ComponentActivity() {
 
         val habitDao = db.habitDao()
         val habitCheckDao = db.habitCheckDao()
-        val factory = HabitViewModelFactory(habitDao, habitCheckDao)
+        val settingsRepo = SettingsRepository(applicationContext)
+        val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo)
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
         MobileAds.initialize(this) {}
