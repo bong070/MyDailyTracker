@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -80,7 +81,12 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 
                     if (totalCount > 0) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("오늘 완료: $completedCount / $totalCount", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = "🏆 오늘 완료: $completedCount / $totalCount",
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 1.0f),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
                             Spacer(modifier = Modifier.height(4.dp))
                             LinearProgressIndicator(
                                 progress = completedCount / totalCount.toFloat(),
@@ -93,21 +99,35 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    LazyColumn {
-                        items(sortedHabits) { habit ->
-                            val isChecked = habitChecks[habit.id]?.isCompleted == true && habitChecks[habit.id]?.date == todayString
+                    if (sortedHabits.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 48.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("매일의 작은 루틴이 큰 변화를 만듭니다!")
+                        }
+                    } else {
+                        LazyColumn {
+                            items(sortedHabits) { habit ->
+                                val isChecked =
+                                    habitChecks[habit.id]?.isCompleted == true && habitChecks[habit.id]?.date == todayString
 
-                            HabitItem(
-                                habit = habit,
-                                isChecked = isChecked,
-                                onCheckToggle = {
-                                    scope.launch {
-                                        viewModel.toggleHabitCheck(habit)
-                                    }
-                                },
-                                onClick = { selectedHabitState.value = habit },
-                                onRemove = { viewModel.deleteHabit(it) }
-                            )
+                                HabitItem(
+                                    habit = habit,
+                                    isChecked = isChecked,
+                                    onCheckToggle = {
+                                        scope.launch {
+                                            viewModel.toggleHabitCheck(habit)
+                                        }
+                                    },
+                                    onClick = { selectedHabitState.value = habit },
+                                    onRemove = { viewModel.deleteHabit(it) }
+                                )
+                            }
                         }
                     }
                 }
