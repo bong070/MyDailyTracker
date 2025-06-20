@@ -28,8 +28,13 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration
 import android.Manifest
+import android.content.Context
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.rememberLazyListState
+import org.burnoutcrew.reorderable.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HabitTrackerScreen(viewModel: HabitViewModel) {
     val sortedHabits by viewModel.sortedHabits.collectAsState()
@@ -37,9 +42,11 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
     val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val completedCount = habitChecks.values.count { it.date == todayString }
+
     var newHabitName by remember { mutableStateOf("") }
     val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
+
     val sortOption by viewModel.sortOption.collectAsState()
     val alarmEnabled by viewModel.alarmEnabled.collectAsState()
     val autoDelete by viewModel.autoDelete.collectAsState()
@@ -48,11 +55,12 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 
     RequestNotificationPermission()
 
+    val context = LocalContext.current
     if (selectedHabitState.value != null) {
         HabitDetailScreen(
             habit = selectedHabitState.value!!,
-            onBack = { selectedHabitState.value = null },
-            viewModel = viewModel
+            viewModel = viewModel,
+            onBack = { selectedHabitState.value = null }
         )
     } else {
         Scaffold(
@@ -60,111 +68,139 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
             topBar = {
                 TopBarWithCountdownAndSettings(
                     endTime = endTime,
+                    alarmEnabled = alarmEnabled,
+                    context = context,
                     onSettingsClick = { showSettings = true }
                 )
             },
-            bottomBar = {
-                AdMobBanner()
-            },
-            content = { padding ->
-                Column(
-                    modifier = Modifier
-                        .padding(padding)
-                        .padding(16.dp)
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        TextField(
-                            value = newHabitName,
-                            onValueChange = { newHabitName = it },
-                            label = { Text("Add New Tracking Item") },
-                            modifier = Modifier.weight(1f)
+            bottomBar = { AdMobBanner() }
+        ) { padding ->
+            val listState = rememberLazyListState()
+            var hasShownManualToast by remember { mutableStateOf(false) }
+
+            val reorderState = rememberReorderableLazyListState(
+                listState = listState,
+                onMove = { from, to ->
+                if (sortOption != SortOption.MANUAL) {
+                    viewModel.setSortOption(SortOption.MANUAL)
+                    if (!hasShownManualToast) {
+                        Toast.makeText(context, "사용자 지정 정렬로 전환되었습니다", Toast.LENGTH_SHORT).show()
+                        hasShownManualToast = true
+                    }
+                }
+                viewModel.reorderHabits(from.index, to.index)
+            })
+
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextField(
+                        value = newHabitName,
+                        onValueChange = { newHabitName = it },
+                        label = { Text("Add New Tracking Item") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        if (newHabitName.isNotBlank()) {
+                            viewModel.addHabit(newHabitName)
+                            newHabitName = ""
+                        }
+                    }) {
+                        Text("Add")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (sortedHabits.isNotEmpty()) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "🏆 오늘 완료: $completedCount / ${sortedHabits.size}",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = {
-                            if (newHabitName.isNotBlank()) {
-                                viewModel.addHabit(newHabitName)
-                                newHabitName = ""
-                            }
-                        }) {
-                            Text("Add")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    val totalCount = sortedHabits.size
-
-                    if (totalCount > 0) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "🏆 오늘 완료: $completedCount / $totalCount",
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 1.0f),
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            LinearProgressIndicator(
-                                progress = completedCount / totalCount.toFloat(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp),
-                                color = Color(0xFF4CAF50)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    if (sortedHabits.isEmpty()) {
-                        Column(
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = completedCount / sortedHabits.size.toFloat(),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("매일의 작은 루틴이 큰 변화를 만듭니다!")
-                        }
-                    } else {
-                        LazyColumn {
-                            items(sortedHabits) { habit ->
-                                val isChecked =
-                                    habitChecks[habit.id]?.isCompleted == true && habitChecks[habit.id]?.date == todayString
+                                .padding(horizontal = 8.dp),
+                            color = Color(0xFF4CAF50)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                if (sortedHabits.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("매일의 작은 루틴이 큰 변화를 만듭니다!")
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .reorderable(reorderState)
+                            .detectReorderAfterLongPress(reorderState)
+                    ) {
+                        items(sortedHabits, key = { it.id }) { habit ->
+                            ReorderableItem(state = reorderState, key = habit.id) { isDragging ->
+                                val isChecked = habitChecks[habit.id]?.let {
+                                    it.isCompleted && it.date == todayString
+                                } ?: false
+
+                                val itemModifier = Modifier
+                                    .background(if (isDragging) Color.LightGray else Color.Transparent)
+                                    .animateItemPlacement()
 
                                 HabitItem(
                                     habit = habit,
                                     isChecked = isChecked,
                                     onCheckToggle = {
-                                        scope.launch {
-                                            viewModel.toggleHabitCheck(habit)
-                                        }
+                                        scope.launch { viewModel.toggleHabitCheck(habit) }
                                     },
                                     onClick = { selectedHabitState.value = habit },
-                                    onRemove = { viewModel.deleteHabit(it) }
+                                    onRemove = { viewModel.deleteHabit(it) },
+                                    modifier = itemModifier
                                 )
                             }
                         }
                     }
                 }
             }
-        )
 
-        if (showSettings) {
-            SettingsDialog(
-                onDismiss = { showSettings = false },
-                initialDayEndTime = endTime.run { hour to minute },
-                initialAlarmEnabled = alarmEnabled,
-                initialAutoDelete = autoDelete,
-                initialSortOption = sortOption,
-                onSave = { time, alarm, autoDelete, selectedSort ->
-                    val (hour, minute) = time
-                    viewModel.setEndTime(LocalTime.of(hour, minute))
-                    viewModel.setAlarmEnabled(alarm)
-                    viewModel.setAutoDelete(autoDelete)
-                    viewModel.setSortOption(selectedSort)
-                    showSettings = false
-                }
-            )
+            if (showSettings) {
+                SettingsDialog(
+                    viewModel = viewModel,
+                    onDismiss = { showSettings = false },
+                    initialDayEndTime = endTime.run { hour to minute },
+                    initialAlarmEnabled = alarmEnabled,
+                    initialAutoDelete = autoDelete,
+                    initialSortOption = sortOption,
+                    onSave = { time, alarm, autoDel, selectedSort ->
+                        viewModel.setEndTime(LocalTime.of(time.first, time.second))
+                        viewModel.setAlarmEnabled(alarm)
+                        viewModel.setAutoDelete(autoDel)
+                        viewModel.setSortOption(selectedSort)
+                        showSettings = false
+                    }
+                )
+            }
         }
     }
 }
@@ -173,6 +209,8 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
 @Composable
 fun TopBarWithCountdownAndSettings(
     endTime: LocalTime,
+    alarmEnabled: Boolean,
+    context: Context,
     onSettingsClick: () -> Unit
 ) {
     var remainingTime by remember { mutableStateOf(calculateRemainingTime(endTime)) }
@@ -182,6 +220,14 @@ fun TopBarWithCountdownAndSettings(
         while (true) {
             remainingTime = calculateRemainingTime(endTime)
             delay(1000L)
+        }
+    }
+    // 알람 상태가 바뀔 때마다 실행
+    LaunchedEffect(alarmEnabled) {
+        if (alarmEnabled) {
+            AlarmHelper.scheduleDailyAlarms(context)
+        } else {
+            AlarmHelper.cancelAllAlarms(context)
         }
     }
 

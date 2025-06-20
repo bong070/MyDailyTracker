@@ -4,52 +4,71 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.widget.Toast
 import java.util.Calendar
 import kotlin.jvm.java
+import com.bbks.mydailytracker.NotificationReceiver
 
 object AlarmHelper {
-    fun scheduleRepeatingAlarm(context: Context, habit: Habit) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    fun scheduleDailyAlarms(context: Context) {
+        val times = listOf(12 to 0, 18 to 0) // 오후 12시, 6시
 
-        habit.repeatDays.forEach { dayInt ->
-            val intent = Intent(context, AlarmReceiver::class.java).apply {
-                putExtra("habit_name", habit.name)
+        times.forEachIndexed { index, (hour, minute) ->
+            val alarmTime = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                if (before(Calendar.getInstance())) add(Calendar.DAY_OF_YEAR, 1)
             }
 
+            val intent = Intent(context, NotificationReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                habit.id * 10 + dayInt, // 고유하게 만들기 위해
+                index, // requestCode 고유화
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.DAY_OF_WEEK, if (dayInt == 7) 1 else dayInt + 1) // DayOfWeek 기준으로 조정
-                set(Calendar.HOUR_OF_DAY, habit.alarmTime?.hour ?: 8)
-                set(Calendar.MINUTE, habit.alarmTime?.minute ?: 0)
-                set(Calendar.SECOND, 0)
-                if (before(Calendar.getInstance())) add(Calendar.WEEK_OF_YEAR, 1)
-            }
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-            alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                AlarmManager.INTERVAL_DAY * 7,
-                pendingIntent
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    try {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            alarmTime.timeInMillis,
+                            pendingIntent
+                        )
+                    } catch (e: SecurityException) {
+                        e.printStackTrace()
+                        // 사용자에게 알람 권한이 필요하다는 안내를 할 수도 있음
+                    }
+                } else {
+                    // 사용자 설정에서 정확한 알람 권한을 수동으로 허용해야 함
+                    Toast.makeText(context, "정확한 알람 권한이 필요합니다", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    alarmTime.timeInMillis,
+                    pendingIntent
+                )
+            }
         }
     }
 
-    fun cancelAlarms(context: Context, habit: Habit) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        habit.repeatDays.forEach { dayInt ->
-            val intent = Intent(context, AlarmReceiver::class.java)
+    fun cancelAllAlarms(context: Context) {
+        (0..1).forEach { index ->
+            val intent = Intent(context, NotificationReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                habit.id * 10 + dayInt,
+                index,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(pendingIntent)
         }
     }

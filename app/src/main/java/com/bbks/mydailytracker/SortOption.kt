@@ -1,5 +1,6 @@
 enum class SortOption {
     ALPHABETICAL,
     RECENT,
-    COMPLETED_FIRST
+    COMPLETED_FIRST,
+    MANUAL
 }

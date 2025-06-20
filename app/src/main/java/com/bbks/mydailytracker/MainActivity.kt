@@ -32,7 +32,8 @@ class MainActivity : ComponentActivity() {
         val habitDao = db.habitDao()
         val habitCheckDao = db.habitCheckDao()
         val settingsRepo = SettingsRepository(applicationContext)
-        val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo)
+        val habitRepo = HabitRepository(habitDao)
+        val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo, habitRepo)
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
         MobileAds.initialize(this) {}

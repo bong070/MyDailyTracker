@@ -13,7 +13,8 @@ import java.time.LocalTime
 class HabitViewModel(
     private val habitDao: HabitDao,
     private val habitCheckDao: HabitCheckDao,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val habitRepository: HabitRepository
 ) : ViewModel() {
 
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
@@ -41,6 +42,7 @@ class HabitViewModel(
             SortOption.ALPHABETICAL -> habitList.sortedBy { it.name }
             SortOption.COMPLETED_FIRST -> habitList.sortedByDescending { habitChecks.value.containsKey(it.id) }
             SortOption.RECENT -> habitList.sortedByDescending { it.id }
+            SortOption.MANUAL -> habitList.sortedBy { it.order } // ← 여기가 핵심
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -82,7 +84,8 @@ class HabitViewModel(
 
     fun addHabit(name: String) {
         viewModelScope.launch {
-            habitDao.insert(Habit(name = name))
+            val lastOrder = habits.value.maxOfOrNull { it.order ?: 0 } ?: 0
+            habitDao.insert(Habit(name = name, order = lastOrder + 1)) // order 지정
         }
     }
 
@@ -158,6 +161,32 @@ class HabitViewModel(
             habitDao.update(updatedHabit)
             _habits.update { habits ->
                 habits.map { if (it.id == updatedHabit.id) updatedHabit else it }
+            }
+        }
+    }
+
+    fun disableAllHabitAlarms() {
+        viewModelScope.launch {
+            val habits = habitRepository.getAllHabitsOnce()// 모든 습관 불러오기
+            for (habit in habits) {
+                val updated = habit.copy(
+                    alarmEnabled = false,
+                    repeatDays = emptyList()
+                )
+                habitRepository.update(updated)
+            }
+        }
+    }
+
+    fun reorderHabits(fromIndex: Int, toIndex: Int) {
+        val currentList = sortedHabits.value.toMutableList()
+        val habit = currentList.removeAt(fromIndex)
+        currentList.add(toIndex, habit)
+
+        viewModelScope.launch {
+            currentList.forEachIndexed { index, updatedHabit ->
+                val reordered = updatedHabit.copy(order = index)
+                habitRepository.update(reordered)
             }
         }
     }

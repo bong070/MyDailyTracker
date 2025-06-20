@@ -42,13 +42,19 @@ fun HabitDetailScreen(
     val context = LocalContext.current
     val timePickerState = remember { mutableStateOf(habit.alarmTime ?: LocalTime.of(8, 0)) }
     val selectedDays = remember {
-        mutableStateListOf<Int>().apply {
-            habit.repeatDays.forEach { add(it) }
-        }
+        mutableStateListOf<Int>().apply { habit.repeatDays.forEach { add(it) } }
     }
-    var alarmEnabled = remember { mutableStateOf(habit.alarmEnabled) }
+    val alarmEnabled = remember { mutableStateOf(habit.alarmEnabled) }
 
-    val daysOfWeek = DayOfWeek.values() // MONDAY(1) ~ SUNDAY(7)
+    val daysOfWeek = DayOfWeek.values()
+
+    val currentDaysText = formatDaysText(selectedDays)
+    val currentTimeText = formatTimeText(timePickerState.value.hour, timePickerState.value.minute)
+
+    val savedDaysText = formatDaysText(habit.repeatDays)
+    val savedTimeText = habit.alarmHour?.let { hour ->
+        habit.alarmMinute?.let { minute -> formatTimeText(hour, minute) }
+    }
 
     Scaffold(
         topBar = {
@@ -75,32 +81,29 @@ fun HabitDetailScreen(
                         alarmEnabled = alarmEnabled.value,
                         repeatDays = selectedDays.toList()
                     )
+
                     if (alarmEnabled.value) {
                         if (!canScheduleExactAlarms(context)) {
-                            Toast.makeText(context, "정확한 알람 권한이 필요합니다. 설정에서 허용해주세요.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "정확한 알람 권한이 필요합니다.", Toast.LENGTH_LONG).show()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                val alarmManager =
-                                    context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                                if (!alarmManager.canScheduleExactAlarms()) {
-                                    val intent =
-                                        Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                                    context.startActivity(intent)
-                                    return@Button
-                                }
+                                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                context.startActivity(intent)
+                                return@Button
                             }
                         }
+                        cancelWeeklyAlarms(context, selectedDays)
                         scheduleWeeklyAlarms(
                             context,
                             timePickerState.value.hour,
                             timePickerState.value.minute,
-                            selectedDays.toList()
+                            selectedDays
                         )
                         Toast.makeText(context, "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
-                    }
-                    else {
+                    } else {
                         cancelWeeklyAlarms(context, habit.repeatDays)
                         Toast.makeText(context, "알람이 취소되었습니다", Toast.LENGTH_SHORT).show()
                     }
+
                     viewModel.updateHabit(updatedHabit)
                     onBack()
                 }) {
@@ -112,8 +115,9 @@ fun HabitDetailScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
+            // 반복 요일 설정
             Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -129,65 +133,65 @@ fun HabitDetailScreen(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
+            Text("현재 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(2.dp))
+            Text(currentDaysText, style = MaterialTheme.typography.bodySmall)
 
+            Spacer(Modifier.height(8.dp))
+            Text("저장된 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(2.dp))
+            Text(savedDaysText, style = MaterialTheme.typography.bodySmall)
+
+            Spacer(Modifier.height(20.dp))
+            // 알람 시간
+            Text("⏰ 알람 시간", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("⏰ 알람 시간", modifier = Modifier.weight(1f))
                 Text("%02d:%02d".format(timePickerState.value.hour, timePickerState.value.minute))
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(12.dp))
                 Button(onClick = {
-                    showLocalTimePickerDialog(context) { selectedTime ->
-                        timePickerState.value = selectedTime
-                    }
+                    showLocalTimePickerDialog(context) { timePickerState.value = it }
                 }) {
                     Text("시간 선택")
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            val summaryText = if (alarmEnabled.value) {
-                formatAlarmSummary(
-                    selectedDays,
-                    timePickerState.value.hour,
-                    timePickerState.value.minute
-                )
+            Spacer(Modifier.height(12.dp))
+            // 현재 알람 설정
+            Text("현재 알람 설정:", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(2.dp))
+            if (alarmEnabled.value) {
+                Text(currentDaysText, style = MaterialTheme.typography.bodySmall)
+                Text(currentTimeText, style = MaterialTheme.typography.bodySmall)
             } else {
-                "알람 사용 안함"
+                Text("알람이 꺼져 있어요", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
-            Text(
-                text = "🔔 현재 알람 설정: $summaryText",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            val savedSummaryText = if (habit.alarmEnabled) {
-                formatAlarmSummary(
-                    habit.repeatDays,
-                    habit.alarmHour ?: 8,
-                    habit.alarmMinute ?: 0
-                )
+            Spacer(Modifier.height(12.dp))
+            // 저장된 알람 설정
+            Text("저장된 알람 설정:", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(2.dp))
+            if (habit.alarmEnabled) {
+                Text(savedDaysText, style = MaterialTheme.typography.bodySmall)
+                savedTimeText?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall)
+                }
             } else {
-                "알람 사용 안함"
+                Text("알람이 꺼져 있어요", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
-            Text(
-                text = "🔔 저장된 알람: $savedSummaryText",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(Modifier.height(16.dp))
-
+            Spacer(Modifier.height(20.dp))
+            // 알람 사용 스위치
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🔔 알람 사용")
+                Text("알람 사용", style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = alarmEnabled.value, onCheckedChange = { alarmEnabled.value = it })
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
+            // 권한 안내
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !canScheduleExactAlarms(context)) {
                 Text(
                     "📌 정확한 알람 권한이 꺼져 있습니다. 설정 > 알림 > 정확한 알람에서 허용해주세요.",
@@ -198,6 +202,14 @@ fun HabitDetailScreen(
         }
     }
 }
+
+
+fun formatDayList(days: List<Int>): String {
+    return days.sorted().joinToString(", ") { dayInt ->
+        DayOfWeek.of(dayInt).getDisplayName(TextStyle.SHORT, Locale.getDefault())
+    }
+}
+
 
 fun showLocalTimePickerDialog(context: Context, onTimeSelected: (LocalTime) -> Unit) {
     val calendar = Calendar.getInstance()
@@ -277,8 +289,10 @@ fun cancelWeeklyAlarms(context: Context, repeatDays: List<Int>) {
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        alarmManager.cancel(pendingIntent)
-        Log.d("AlarmCancel", "알람 취소됨 - 요일: $day")
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            Log.d("AlarmCancel", "중복 방지 - 기존 알람 취소됨: 요일=$day")
+        }
     }
 }
 
@@ -304,6 +318,52 @@ fun canScheduleExactAlarms(context: Context): Boolean {
     } else {
         true
     }
+}
+
+fun cancelAllAlarms(context: Context) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    for (day in 1..7) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            day,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_NO_CREATE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            Log.d("AlarmCancel", "전체 알람 초기화 - 요일: $day")
+        }
+    }
+}
+
+fun formatRepeatDaysSummary(repeatDays: List<Int>): String {
+    return if (repeatDays.isEmpty()) {
+        "없음"
+    } else {
+        repeatDays.sorted()
+            .joinToString(", ") { dayInt ->
+                DayOfWeek.of(dayInt).getDisplayName(TextStyle.SHORT, Locale.getDefault())
+            }
+    }
+}
+
+fun formatAlarmSummaryText(repeatDays: List<Int>, hour: Int, minute: Int): String {
+    val days = repeatDays.mapNotNull {
+        DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault())
+    }.joinToString(", ")
+    return if (repeatDays.isNotEmpty()) "$days · %02d:%02d".format(hour, minute)
+    else "%02d:%02d".format(hour, minute)
+}
+
+fun formatDaysText(repeatDays: List<Int>): String {
+    return repeatDays
+        .map { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
+        .joinToString(", ")
+}
+
+fun formatTimeText(hour: Int, minute: Int): String {
+    return "%02d:%02d".format(hour, minute)
 }
 
 

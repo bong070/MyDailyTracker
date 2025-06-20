@@ -17,7 +17,8 @@ fun HabitItem(
     isChecked: Boolean,
     onCheckToggle: () -> Unit,
     onClick: () -> Unit,
-    onRemove: (Habit) -> Unit
+    onRemove: (Habit) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var showDialog by remember { mutableStateOf(false) }
 

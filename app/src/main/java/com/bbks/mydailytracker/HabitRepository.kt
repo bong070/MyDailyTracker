@@ -17,4 +17,8 @@ class HabitRepository(private val habitDao: HabitDao) {
     suspend fun delete(habit: Habit) {
         habitDao.delete(habit)
     }
+
+    suspend fun getAllHabitsOnce(): List<Habit> {
+        return habitDao.getAllHabitsOnce()
+    }
 }
