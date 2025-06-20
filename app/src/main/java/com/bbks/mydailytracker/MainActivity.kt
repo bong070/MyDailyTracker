@@ -3,6 +3,7 @@ package com.bbks.mydailytracker
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.bbks.mydailytracker.data.SettingsRepository
@@ -21,6 +22,12 @@ class MainActivity : ComponentActivity() {
             HabitDatabase::class.java,
             "habits.db"
         ).fallbackToDestructiveMigration().build()
+
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.VIBRATE),
+            0
+        )
 
         val habitDao = db.habitDao()
         val habitCheckDao = db.habitCheckDao()

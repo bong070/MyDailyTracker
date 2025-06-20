@@ -152,4 +152,13 @@ class HabitViewModel(
             settingsRepository.savePreferences(prefs)
         }
     }
+
+    fun updateHabit(updatedHabit: Habit) {
+        viewModelScope.launch {
+            habitDao.update(updatedHabit)
+            _habits.update { habits ->
+                habits.map { if (it.id == updatedHabit.id) updatedHabit else it }
+            }
+        }
+    }
 }
