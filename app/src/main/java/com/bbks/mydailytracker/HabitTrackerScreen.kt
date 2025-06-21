@@ -187,18 +187,7 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
             if (showSettings) {
                 SettingsDialog(
                     viewModel = viewModel,
-                    onDismiss = { showSettings = false },
-                    initialDayEndTime = endTime.run { hour to minute },
-                    initialAlarmEnabled = alarmEnabled,
-                    initialAutoDelete = autoDelete,
-                    initialSortOption = sortOption,
-                    onSave = { time, alarm, autoDel, selectedSort ->
-                        viewModel.setEndTime(LocalTime.of(time.first, time.second))
-                        viewModel.setAlarmEnabled(alarm)
-                        viewModel.setAutoDelete(autoDel)
-                        viewModel.setSortOption(selectedSort)
-                        showSettings = false
-                    }
+                    onDismiss = { showSettings = false }
                 )
             }
         }

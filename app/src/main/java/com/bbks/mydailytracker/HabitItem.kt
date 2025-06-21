@@ -53,7 +53,7 @@ fun HabitItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface // 기본 배경색
         )
@@ -61,7 +61,7 @@ fun HabitItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -72,7 +72,7 @@ fun HabitItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(checked = isChecked, onCheckedChange = { onCheckToggle() })
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = habit.name,
                     color = textColor,

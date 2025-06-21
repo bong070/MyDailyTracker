@@ -29,6 +29,14 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".AlarmActivity"
+            android:theme="@style/Theme.MyDailyTracker"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true" />
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7350776421233026~1695049951"/>

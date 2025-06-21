@@ -4,36 +4,29 @@ import SortOption
 import android.app.TimePickerDialog
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import java.time.LocalTime
 import java.util.*
 
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
-    viewModel: HabitViewModel,
-    initialDayEndTime: Pair<Int, Int> = 23 to 59,
-    initialAlarmEnabled: Boolean = false,
-    initialAutoDelete: Boolean = false,
-    initialSortOption: SortOption = SortOption.ALPHABETICAL,
-    onSave: (dayEndTime: Pair<Int, Int>, alarmEnabled: Boolean, autoDelete: Boolean, SortOption) -> Unit
+    viewModel: HabitViewModel
 ) {
     val context = LocalContext.current
 
-    var dayEndTime by remember { mutableStateOf(initialDayEndTime) }
-    var alarmEnabled by remember { mutableStateOf(initialAlarmEnabled) }
-    var autoDelete by remember { mutableStateOf(initialAutoDelete) }
-    var selectedSortOption by remember { mutableStateOf(initialSortOption) }
+    // ✅ ViewModel 값들과 직접 바인딩 (앱 재시작 후에도 유지됨)
+    val endTime by viewModel.endTime.collectAsState()
+    val alarmEnabled by viewModel.alarmEnabled.collectAsState()
+    val autoDelete by viewModel.autoDelete.collectAsState()
+    val selectedSortOption by viewModel.sortOption.collectAsState()
+
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 
     // 🔁 전체 알람 초기화 확인 다이얼로그
@@ -48,9 +41,7 @@ fun SettingsDialog(
                     viewModel.disableAllHabitAlarms()
                     Toast.makeText(context, "모든 알람이 초기화되었습니다", Toast.LENGTH_SHORT).show()
                     showResetConfirmDialog = false
-                }) {
-                    Text("확인")
-                }
+                }) { Text("확인") }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmDialog = false }) {
@@ -64,30 +55,21 @@ fun SettingsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                onSave(dayEndTime, alarmEnabled, autoDelete, selectedSortOption)
-                onDismiss()
-            }) {
-                Text("저장")
-            }
+            TextButton(onClick = onDismiss) { Text("닫기") } // 저장 버튼 필요 없음: 즉시 저장되므로
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("취소")
-            }
-        },
+        dismissButton = null,
         title = { Text("설정") },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                // 1️⃣ My Day End Time
+                // 1️⃣ 종료 시간
                 Text("My Day End Time", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(4.dp))
-                Text("%02d:%02d".format(dayEndTime.first, dayEndTime.second))
+                Text("%02d:%02d".format(endTime.hour, endTime.minute))
                 Button(
                     onClick = {
                         showTimePickerDialog(context) { selectedTime ->
-                            dayEndTime = selectedTime
+                            viewModel.setEndTime(LocalTime.of(selectedTime.first, selectedTime.second))
                         }
                     },
                     modifier = Modifier.padding(top = 4.dp)
@@ -103,7 +85,7 @@ fun SettingsDialog(
                 DropdownMenuBox(
                     options = SortOption.values().toList(),
                     selected = selectedSortOption,
-                    onSelect = { selectedSortOption = it }
+                    onSelect = { viewModel.setSortOption(it) }
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -112,12 +94,27 @@ fun SettingsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("🔔 알림 사용")
                     Spacer(Modifier.weight(1f))
-                    Switch(checked = alarmEnabled, onCheckedChange = { alarmEnabled = it })
+                    Switch(
+                        checked = alarmEnabled,
+                        onCheckedChange = { viewModel.setAlarmEnabled(it) }
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // 4️⃣ 자동 초기화
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🗑️ 자동 초기화")
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = autoDelete,
+                        onCheckedChange = { viewModel.setAutoDelete(it) }
+                    )
                 }
 
                 Spacer(Modifier.height(24.dp))
 
-                // 4️⃣ 전체 알람 초기화
+                // 5️⃣ 전체 알람 초기화 버튼
                 Button(
                     onClick = { showResetConfirmDialog = true },
                     modifier = Modifier.fillMaxWidth()
@@ -167,3 +164,4 @@ fun DropdownMenuBox(
         }
     }
 }
+
