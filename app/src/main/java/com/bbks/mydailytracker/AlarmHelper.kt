@@ -47,7 +47,7 @@ object AlarmHelper {
                     }
                 } else {
                     // 사용자 설정에서 정확한 알람 권한을 수동으로 허용해야 함
-                    Toast.makeText(context, "정확한 알람 권한이 필요합니다", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "설정 > 앱 > MyDailyTracker > 알림 허용이 필요합니다", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 alarmManager.setExactAndAllowWhileIdle(

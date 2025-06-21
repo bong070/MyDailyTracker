@@ -100,7 +100,7 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
                     TextField(
                         value = newHabitName,
                         onValueChange = { newHabitName = it },
-                        label = { Text("Add New Tracking Item") },
+                        label = { Text("새로운 목표 아이템") },
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -110,7 +110,7 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
                             newHabitName = ""
                         }
                     }) {
-                        Text("Add")
+                        Text("추가")
                     }
                 }
 
@@ -260,28 +260,6 @@ fun calculateRemainingTime(endTime: LocalTime): String {
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
-@Composable
-fun SortMenu(current: SortOption, onSelect: (SortOption) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box {
-        TextButton(onClick = { expanded = true }) {
-            Text("정렬: ${current.name}")
-        }
-
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            SortOption.values().forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.name) },
-                    onClick = {
-                        expanded = false
-                        onSelect(option)
-                    }
-                )
-            }
-        }
-    }
-}
 @Composable
 fun RequestNotificationPermission() {
     val context = LocalContext.current

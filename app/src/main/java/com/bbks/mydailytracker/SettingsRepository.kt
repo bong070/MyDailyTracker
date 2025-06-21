@@ -9,8 +9,6 @@ import SortOption
 import java.time.LocalTime
 
 
-val Context.datastore by preferencesDataStore(name = "user_preferences")
-
 private const val DATASTORE_NAME = "user_prefs"
 val Context.dataStore by preferencesDataStore(name = DATASTORE_NAME)
 
@@ -37,25 +35,25 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun updateAlarmEnabled(enabled: Boolean) {
-        context.datastore.edit { preferences ->
+        context.dataStore.edit { preferences ->
             preferences[PreferenceKeys.ALARM_ENABLED] = enabled
         }
     }
 
     suspend fun updateAutoDelete(enabled: Boolean) {
-        context.datastore.edit { preferences ->
+        context.dataStore.edit { preferences ->
             preferences[PreferenceKeys.AUTO_DELETE] = enabled
         }
     }
 
     suspend fun updateSortOption(option: SortOption) {
-        context.datastore.edit { preferences ->
+        context.dataStore.edit { preferences ->
             preferences[PreferenceKeys.SORT_OPTION] = option.name
         }
     }
 
     suspend fun updateEndTime(time: LocalTime) {
-        context.datastore.edit { preferences ->
+        context.dataStore.edit { preferences ->
             preferences[PreferenceKeys.END_HOUR] = time.hour
             preferences[PreferenceKeys.END_MINUTE] = time.minute
         }

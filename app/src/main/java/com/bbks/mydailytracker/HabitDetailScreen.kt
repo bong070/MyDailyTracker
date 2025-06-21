@@ -186,7 +186,18 @@ fun HabitDetailScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("알람 사용", style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.weight(1f))
-                Switch(checked = alarmEnabled.value, onCheckedChange = { alarmEnabled.value = it })
+                Switch(checked = alarmEnabled.value, onCheckedChange = {
+                    if (it) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                            if (!alarmManager.canScheduleExactAlarms()) {
+                                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                context.startActivity(intent)
+                            }
+                        }
+                    }
+                    alarmEnabled.value = it
+                })
             }
 
             Spacer(Modifier.height(8.dp))

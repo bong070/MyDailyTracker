@@ -62,8 +62,7 @@ fun SettingsDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                // 1️⃣ 종료 시간
-                Text("My Day End Time", style = MaterialTheme.typography.labelLarge)
+                Text("목표 종료 시간", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(4.dp))
                 Text("%02d:%02d".format(endTime.hour, endTime.minute))
                 Button(
@@ -149,13 +148,13 @@ fun DropdownMenuBox(
     var expanded by remember { mutableStateOf(false) }
 
     OutlinedButton(onClick = { expanded = true }) {
-        Text("정렬: ${selected.name}")
+        Text("정렬: ${selected.displayName}")
     }
 
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
         options.forEach { option ->
             DropdownMenuItem(
-                text = { Text(option.name) },
+                text = { Text(option.displayName) },
                 onClick = {
                     onSelect(option)
                     expanded = false

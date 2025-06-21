@@ -42,7 +42,7 @@ class HabitViewModel(
             SortOption.ALPHABETICAL -> habitList.sortedBy { it.name }
             SortOption.COMPLETED_FIRST -> habitList.sortedByDescending { habitChecks.value.containsKey(it.id) }
             SortOption.RECENT -> habitList.sortedByDescending { it.id }
-            SortOption.MANUAL -> habitList.sortedBy { it.order } // ← 여기가 핵심
+            SortOption.MANUAL -> habitList.sortedBy { it.order }
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

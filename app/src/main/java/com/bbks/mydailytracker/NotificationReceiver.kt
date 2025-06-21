@@ -20,7 +20,7 @@ class NotificationReceiver : BroadcastReceiver() {
         }
 
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("My Daily Tracker")
             .setContentText("오늘 목표를 완료하셨나요?")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

@@ -1,0 +1,15 @@
+package com.bbks.mydailytracker
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent?) {
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+            Log.d("BootReceiver", "디바이스 부팅 완료 - 알람 재등록")
+            AlarmHelper.scheduleDailyAlarms(context)
+        }
+    }
+}
