@@ -71,7 +71,7 @@ fun HabitDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp).padding(WindowInsets.systemBars.asPaddingValues()),
                 contentAlignment = Alignment.Center
             ) {
                 Button(onClick = {

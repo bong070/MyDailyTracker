@@ -13,4 +13,7 @@ interface HabitCheckDao {
 
     @Query("DELETE FROM HabitCheck WHERE habitId = :habitId")
     suspend fun deleteChecksForHabit(habitId: Int)
+
+    @Update
+    suspend fun updateHabitCheck(check: HabitCheck)
 }

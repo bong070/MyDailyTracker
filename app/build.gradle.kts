@@ -13,8 +13,8 @@ android {
         applicationId = "com.bbks.mydailytracker"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.3.4"
+        versionCode = 9
+        versionName = "0.3.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -65,6 +65,9 @@ dependencies {
     implementation(libs.room.ktx)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")
     kapt(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

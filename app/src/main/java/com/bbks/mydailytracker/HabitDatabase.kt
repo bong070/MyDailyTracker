@@ -6,11 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Habit::class, HabitCheck::class], version = 5)
+@Database(entities = [Habit::class, HabitCheck::class, DailyHabitResult::class], version = 6)
 @TypeConverters(Converters::class)
 abstract class HabitDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
     abstract fun habitCheckDao(): HabitCheckDao
+    abstract fun dailyHabitResultDao(): DailyHabitResultDao
 
     companion object {
         @Volatile private var INSTANCE: HabitDatabase? = null
@@ -20,7 +21,7 @@ abstract class HabitDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     HabitDatabase::class.java,
-                    "habit_database"
+                    "habits.db"
                 ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance

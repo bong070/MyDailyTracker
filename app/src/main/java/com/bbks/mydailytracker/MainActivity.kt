@@ -9,6 +9,9 @@ import androidx.room.Room
 import com.bbks.mydailytracker.data.SettingsRepository
 import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
 import com.google.android.gms.ads.MobileAds
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 class MainActivity : ComponentActivity() {
 
@@ -31,8 +34,9 @@ class MainActivity : ComponentActivity() {
 
         val habitDao = db.habitDao()
         val habitCheckDao = db.habitCheckDao()
+        val dailyHabitResultDao = db.dailyHabitResultDao()
         val settingsRepo = SettingsRepository(applicationContext)
-        val habitRepo = HabitRepository(habitDao)
+        val habitRepo = HabitRepository(habitDao, habitCheckDao, dailyHabitResultDao)
         val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo, habitRepo)
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
@@ -40,7 +44,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyDailyTrackerTheme {
-                HabitTrackerScreen(viewModel)
+                val navController = rememberNavController()
+
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        HabitTrackerScreen(
+                            viewModel = viewModel,
+                            onNavigateToStats = { navController.navigate("stats") }
+                        )
+                    }
+                    composable("stats") {
+                        StatsScreen(
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
             }
         }
     }

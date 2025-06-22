@@ -1,6 +1,7 @@
 package com.bbks.mydailytracker
 
 import SortOption
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bbks.mydailytracker.data.SettingsRepository
@@ -8,6 +9,7 @@ import com.bbks.mydailytracker.data.UserPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 class HabitViewModel(
@@ -38,13 +40,31 @@ class HabitViewModel(
     private val today: String = LocalDate.now().toString()
 
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
+        val currentHour = LocalDateTime.now().hour
+        var targetDay = LocalDate.now().dayOfWeek.value
+        if (currentHour >= 12) targetDay += 1
+
+        val filtered = habitList.filter {
+            it.repeatDays.isEmpty() || it.repeatDays.contains(targetDay)
+        }
+
         when (sort) {
-            SortOption.ALPHABETICAL -> habitList.sortedBy { it.name }
-            SortOption.COMPLETED_FIRST -> habitList.sortedByDescending { habitChecks.value.containsKey(it.id) }
-            SortOption.RECENT -> habitList.sortedByDescending { it.id }
-            SortOption.MANUAL -> habitList.sortedBy { it.order }
+            SortOption.ALPHABETICAL -> filtered.sortedBy { it.name }
+            SortOption.COMPLETED_FIRST -> filtered.sortedByDescending {
+                habitChecks.value.containsKey(it.id)
+            }
+            SortOption.RECENT -> filtered.sortedByDescending { it.id }
+            SortOption.MANUAL -> filtered.sortedBy { it.order }
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val weeklyStats: StateFlow<List<DailyHabitResult>> =
+        habitRepository.getWeeklyStats()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
 
     init {
         observeHabits()
@@ -115,10 +135,11 @@ class HabitViewModel(
     fun isHabitChecked(habitId: Int): Boolean =
         _habitChecks.value.containsKey(habitId)
 
-    fun setEndTime(newTime: LocalTime) {
+    fun setEndTime(context: Context, newTime: LocalTime) {
         _endTime.value = newTime
         viewModelScope.launch {
             settingsRepository.updateEndTime(newTime)
+            HabitResetScheduler.scheduleDailyReset(context, newTime)
         }
     }
 
@@ -143,7 +164,12 @@ class HabitViewModel(
         }
     }
 
-    fun saveSettings(endTime: LocalTime, alarmEnabled: Boolean, autoDelete: Boolean, sortOption: SortOption) {
+    fun saveSettings(
+        endTime: LocalTime,
+        alarmEnabled: Boolean,
+        autoDelete: Boolean,
+        sortOption: SortOption
+    ) {
         viewModelScope.launch {
             val prefs = UserPreferences(
                 endHour = endTime.hour,
@@ -188,6 +214,14 @@ class HabitViewModel(
                 val reordered = updatedHabit.copy(order = index)
                 habitRepository.update(reordered)
             }
+        }
+    }
+
+    fun refreshHabits() {
+        viewModelScope.launch {
+            val loadedHabits = habitDao.getAllHabitsOnce()
+            _habits.value = loadedHabits
+            refreshHabitChecks(loadedHabits)
         }
     }
 }

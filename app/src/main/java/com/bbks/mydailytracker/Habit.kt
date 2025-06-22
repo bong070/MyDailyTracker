@@ -19,8 +19,6 @@ data class Habit(
     val order: Int = 0
 )
 
-
-
 val Habit.alarmTime: LocalTime?
     get() = if (alarmHour != null && alarmMinute != null)
         LocalTime.of(alarmHour, alarmMinute)

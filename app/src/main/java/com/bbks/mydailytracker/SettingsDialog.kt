@@ -65,10 +65,11 @@ fun SettingsDialog(
                 Text("목표 종료 시간", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(4.dp))
                 Text("%02d:%02d".format(endTime.hour, endTime.minute))
+                val context = LocalContext.current
                 Button(
                     onClick = {
                         showTimePickerDialog(context) { selectedTime ->
-                            viewModel.setEndTime(LocalTime.of(selectedTime.first, selectedTime.second))
+                            viewModel.setEndTime(context, LocalTime.of(selectedTime.first, selectedTime.second))
                         }
                     },
                     modifier = Modifier.padding(top = 4.dp)

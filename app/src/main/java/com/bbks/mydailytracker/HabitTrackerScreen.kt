@@ -29,14 +29,16 @@ import java.time.format.DateTimeFormatter
 import java.time.Duration
 import android.Manifest
 import android.content.Context
+import android.content.IntentFilter
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.rememberLazyListState
 import org.burnoutcrew.reorderable.*
+import androidx.compose.material.icons.filled.InsertChart
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HabitTrackerScreen(viewModel: HabitViewModel) {
+fun HabitTrackerScreen(viewModel: HabitViewModel, onNavigateToStats: () -> Unit) {
     val sortedHabits by viewModel.sortedHabits.collectAsState()
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
@@ -56,6 +58,26 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
     RequestNotificationPermission()
 
     val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val receiver = HabitRefreshReceiver {
+            scope.launch {
+                viewModel.refreshHabits()
+            }
+        }
+        val intentFilter = IntentFilter("com.bbks.mydailytracker.HABITS_REFRESH")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            context.registerReceiver(receiver, intentFilter)
+        }
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
     if (selectedHabitState.value != null) {
         HabitDetailScreen(
             habit = selectedHabitState.value!!,
@@ -70,7 +92,8 @@ fun HabitTrackerScreen(viewModel: HabitViewModel) {
                     endTime = endTime,
                     alarmEnabled = alarmEnabled,
                     context = context,
-                    onSettingsClick = { showSettings = true }
+                    onSettingsClick = { showSettings = true },
+                    onStatsClick = onNavigateToStats
                 )
             },
             bottomBar = { AdMobBanner() }
@@ -200,7 +223,8 @@ fun TopBarWithCountdownAndSettings(
     endTime: LocalTime,
     alarmEnabled: Boolean,
     context: Context,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onStatsClick: () -> Unit
 ) {
     var remainingTime by remember { mutableStateOf(calculateRemainingTime(endTime)) }
 
@@ -234,6 +258,9 @@ fun TopBarWithCountdownAndSettings(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f)
             )
+            IconButton(onClick = onStatsClick) {
+                Icon(Icons.Default.InsertChart, contentDescription = "통계")
+            }
             IconButton(onClick = onSettingsClick) {
                 Icon(Icons.Default.Settings, contentDescription = "설정")
             }
