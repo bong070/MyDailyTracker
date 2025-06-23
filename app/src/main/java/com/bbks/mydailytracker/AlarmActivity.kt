@@ -1,64 +1,60 @@
 package com.bbks.mydailytracker
 
-import android.media.MediaPlayer
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Surface
+import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
 
 class AlarmActivity : ComponentActivity() {
-    private lateinit var mediaPlayer: MediaPlayer
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        val title = intent?.getStringExtra("habitTitle") ?: "알람이 울리고 있어요!"
         super.onCreate(savedInstanceState)
 
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        // 전체 화면 및 화면 켜기
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
 
         setContent {
-            AlarmUI(onDismiss = {
-                mediaPlayer.stop()
-                mediaPlayer.release()
-                finish()
-            })
+            MyDailyTrackerTheme {
+                AlarmUIScreen(
+                    title = title,
+                    onStopAlarm = {
+                        stopService(Intent(this, AlarmService::class.java))
+                        finishAffinity() // 액티비티 및 백스택 완전 종료
+                    }
+                )
+            }
         }
-
-        mediaPlayer = MediaPlayer.create(this, R.raw.alarm_sound)
-        mediaPlayer.isLooping = true
-        mediaPlayer.start()
     }
 
-    @Deprecated("뒤로가기 차단용 override")
+    // 뒤로가기 버튼도 알람 종료로 처리
     override fun onBackPressed() {
-        // intentionally left blank
+        stopService(Intent(this, AlarmService::class.java))
+        finishAffinity()
     }
 }
 
 @Composable
-fun AlarmUI(onDismiss: () -> Unit) {
+fun AlarmUIScreen(title: String, onStopAlarm: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Red),
-        color = Color.Red
+            .background(MaterialTheme.colorScheme.background),
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -67,13 +63,15 @@ fun AlarmUI(onDismiss: () -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("⏰ 알람이 울리고 있어요!", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = title,
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
+            )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onDismiss) {
+            Button(onClick = onStopAlarm) {
                 Text("알람 멈추기")
             }
         }
     }
 }
-
-

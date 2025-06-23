@@ -3,12 +3,18 @@ package com.bbks.mydailytracker
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        val habitTitle = intent.getStringExtra("habitTitle") ?: "알람이 울리고 있어요!"
+        val serviceIntent = Intent(context, AlarmService::class.java).apply {
+            putExtra("habitTitle", habitTitle)
         }
-        context.startActivity(alarmIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
     }
 }

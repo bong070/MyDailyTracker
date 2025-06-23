@@ -22,7 +22,7 @@ object HabitResetScheduler {
         }
 
         Log.d("HabitResetScheduler", "알람 예약됨: ${calendar.time}")
-        val intent = Intent(context, HabitResetReceiver::class.java)
+        val intent = Intent(context, HabitResetReceiver::class.java).apply {}
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             1000,

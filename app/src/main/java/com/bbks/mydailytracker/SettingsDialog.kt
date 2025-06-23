@@ -37,7 +37,8 @@ fun SettingsDialog(
             text = { Text("모든 요일의 알람을 삭제하시겠습니까?") },
             confirmButton = {
                 TextButton(onClick = {
-                    cancelAllAlarms(context)
+                    val habitIds = viewModel.habits.value.map { it.id }
+                    cancelAllAlarms(context, habitIds)
                     viewModel.disableAllHabitAlarms()
                     Toast.makeText(context, "모든 알람이 초기화되었습니다", Toast.LENGTH_SHORT).show()
                     showResetConfirmDialog = false

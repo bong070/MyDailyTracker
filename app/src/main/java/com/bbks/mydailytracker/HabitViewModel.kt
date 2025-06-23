@@ -40,10 +40,7 @@ class HabitViewModel(
     private val today: String = LocalDate.now().toString()
 
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
-        val currentHour = LocalDateTime.now().hour
         var targetDay = LocalDate.now().dayOfWeek.value
-        if (currentHour >= 12) targetDay += 1
-
         val filtered = habitList.filter {
             it.repeatDays.isEmpty() || it.repeatDays.contains(targetDay)
         }
