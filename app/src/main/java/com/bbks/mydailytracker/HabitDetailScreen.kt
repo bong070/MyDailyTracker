@@ -34,56 +34,82 @@ import androidx.core.content.ContextCompat
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import com.bbks.mydailytracker.ui.common.MyAppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitDetailScreen(
-    habit: Habit,
+    habitId: Int,
     viewModel: HabitViewModel,
     onBack: () -> Unit
 ) {
+    val statusBarColor = Color(0xFFFFF8E1)
     val context = LocalContext.current
-    val timePickerState = remember { mutableStateOf(habit.alarmTime ?: LocalTime.of(8, 0)) }
-    val selectedDays = remember {
-        mutableStateListOf<Int>().apply { habit.repeatDays.forEach { add(it) } }
+
+    var loadedHabit by remember { mutableStateOf<Habit?>(null) }
+
+    LaunchedEffect(habitId) {
+        viewModel.getHabitById(habitId).collect { loadedHabit = it }
     }
+
+    val habit = loadedHabit
+
+    if (habit == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 100.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Text("로딩 중...")
+        }
+        return
+    }
+
+    val timePickerState = remember { mutableStateOf(habit.alarmTime ?: LocalTime.of(8, 0)) }
+    val selectedDays = remember { mutableStateListOf<Int>().apply { habit.repeatDays.forEach { add(it) } } }
     val alarmEnabled = remember { mutableStateOf(habit.alarmEnabled) }
 
     val daysOfWeek = DayOfWeek.values()
-
     val currentDaysText = formatDaysText(selectedDays)
     val currentTimeText = formatTimeText(timePickerState.value.hour, timePickerState.value.minute)
-
     val savedDaysText = formatDaysText(habit.repeatDays)
     val savedTimeText = habit.alarmHour?.let { hour ->
         habit.alarmMinute?.let { minute -> formatTimeText(hour, minute) }
     }
-    var shouldRequestPermission by remember { mutableStateOf(false) }
 
+    var shouldRequestPermission by remember { mutableStateOf(false) }
     if (shouldRequestPermission) {
         RequestNotificationPermissionOnce()
         shouldRequestPermission = false
     }
 
+    val selectedColor = Color(0xFF4CAF50) // 선택된 칩 배경색 (연녹색)
+    val unselectedColor = Color(0xFFE0E0E0) // 미선택 배경 (연그레이)
+    val selectedTextColor = Color.White
+    val unselectedTextColor = Color.Black
+    val beigeBackground = Color(0xFFFFF8E1)
+
     Scaffold(
+        containerColor = statusBarColor,
         topBar = {
-            TopAppBar(
-                title = { Text(habit.name) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
-                    }
-                }
+            MyAppTopBar(
+                title = habit.name,
+                onBack = onBack,
+                backgroundColor = beigeBackground
             )
         },
         bottomBar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp).padding(WindowInsets.systemBars.asPaddingValues()),
+                    .padding(16.dp)
+                    .padding(WindowInsets.systemBars.asPaddingValues()),
                 contentAlignment = Alignment.Center
             ) {
                 Button(onClick = {
@@ -131,46 +157,49 @@ fun HabitDetailScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // 반복 요일 설정
             Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(daysOfWeek) { day ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                daysOfWeek.forEach { day ->
+                    val isSelected = selectedDays.contains(day.value)
+
                     FilterChip(
                         selected = selectedDays.contains(day.value),
                         onClick = {
-                            if (selectedDays.contains(day.value)) selectedDays.remove(day.value)
+                            if (isSelected) selectedDays.remove(day.value)
                             else selectedDays.add(day.value)
                         },
-                        label = { Text(day.getDisplayName(TextStyle.SHORT, Locale.getDefault())) }
+                        label = {
+                            Text(
+                                day.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                                color = if (isSelected) selectedTextColor else unselectedTextColor
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = if (isSelected) selectedColor else unselectedColor,
+                            labelColor = if (isSelected) selectedTextColor else unselectedTextColor,
+                            selectedContainerColor = selectedColor
+                        )
                     )
                 }
             }
 
             Spacer(Modifier.height(12.dp))
             Text("현재 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.height(2.dp))
-            if (!currentDaysText.isNullOrEmpty()) {
-                Text(currentDaysText, style = MaterialTheme.typography.bodySmall)
-            } else {
-                Text("선택된 반복 요일 설정 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text(currentDaysText.ifEmpty { "선택된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall)
 
             Spacer(Modifier.height(8.dp))
             Text("저장된 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.height(2.dp))
-            if (!savedDaysText.isNullOrEmpty()) {
-                Text(savedDaysText, style = MaterialTheme.typography.bodySmall)
-            } else {
-                Text("저장된 반복 요일 설정 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text(savedDaysText.ifEmpty { "저장된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall)
 
             Spacer(Modifier.height(20.dp))
-            // 알람 시간
             Text("⏰ 알람 시간", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("%02d:%02d".format(timePickerState.value.hour, timePickerState.value.minute))
+                Text(currentTimeText)
                 Spacer(Modifier.width(12.dp))
                 Button(onClick = {
                     showLocalTimePickerDialog(context, timePickerState.value) { timePickerState.value = it }
@@ -180,58 +209,38 @@ fun HabitDetailScreen(
             }
 
             Spacer(Modifier.height(12.dp))
-            // 현재 알람 설정
             Text("현재 알람 설정:", style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.height(2.dp))
-            if (alarmEnabled.value) {
+            if (habit.alarmEnabled) {
                 Text(currentDaysText, style = MaterialTheme.typography.bodySmall)
-                Text(currentTimeText, style = MaterialTheme.typography.bodySmall)
+                currentTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             } else {
-                Text("선택된 알람 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("현재 알람 없음", style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(Modifier.height(12.dp))
-            // 저장된 알람 설정
             Text("저장된 알람 설정:", style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.height(2.dp))
             if (habit.alarmEnabled) {
                 Text(savedDaysText, style = MaterialTheme.typography.bodySmall)
-                savedTimeText?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall)
-                }
+                savedTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             } else {
-                Text("저장된 알람 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("저장된 알람 없음", style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(Modifier.height(20.dp))
-            // 알람 사용 스위치
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("알람 사용", style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = alarmEnabled.value, onCheckedChange = {
-                    if (it) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                            if (!alarmManager.canScheduleExactAlarms()) {
-                                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                                context.startActivity(intent)
-                            }
+                    if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        if (!alarmManager.canScheduleExactAlarms()) {
+                            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                            context.startActivity(intent)
                         }
-                        shouldRequestPermission = true
                     }
+                    shouldRequestPermission = it
                     alarmEnabled.value = it
                 })
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            // 권한 안내
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !canScheduleExactAlarms(context)) {
-                Text(
-                    "📌 정확한 알람 권한이 꺼져 있습니다. 설정 > 어플리케이션 > My Daily Tracker에서 알람에서 허용해주세요.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
             }
         }
     }

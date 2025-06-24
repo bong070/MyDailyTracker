@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.bbks.mydailytracker.data.SettingsRepository
 import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
@@ -12,6 +13,10 @@ import com.google.android.gms.ads.MobileAds
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.bbks.mydailytracker.ui.statistics.StatisticsScreen
+import kotlinx.coroutines.launch
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : ComponentActivity() {
 
@@ -19,6 +24,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
 
         val db = Room.databaseBuilder(
             applicationContext,
@@ -40,6 +47,16 @@ class MainActivity : ComponentActivity() {
         val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo, habitRepo)
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
+        val resetManager = ResetManager(applicationContext)
+        val resetLogic = HabitResetLogic(habitRepo)
+
+        if (resetManager.shouldExecuteReset()) {
+            lifecycleScope.launch {
+                resetLogic.executeReset()
+                resetManager.markResetDone()
+            }
+        }
+
         MobileAds.initialize(this) {}
 
         setContent {
@@ -50,14 +67,26 @@ class MainActivity : ComponentActivity() {
                     composable("main") {
                         HabitTrackerScreen(
                             viewModel = viewModel,
-                            onNavigateToStats = { navController.navigate("stats") }
+                            onNavigateToStats = { navController.navigate("statistics") },
+                            onNavigateToDetail = { habitId ->
+                                navController.navigate("detail/$habitId")
+                            }
                         )
                     }
-                    composable("stats") {
-                        StatsScreen(
-                            viewModel = viewModel,
-                            onBack = { navController.popBackStack() }
-                        )
+
+                    composable("statistics") {
+                        StatisticsScreen(navController)
+                    }
+
+                    composable("detail/{habitId}") { backStackEntry ->
+                        val habitId = backStackEntry.arguments?.getString("habitId")?.toIntOrNull()
+                        if (habitId != null) {
+                            HabitDetailScreen(
+                                habitId = habitId,
+                                viewModel = viewModel,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }

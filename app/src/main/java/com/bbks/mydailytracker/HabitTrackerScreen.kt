@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,16 +28,38 @@ import java.time.format.DateTimeFormatter
 import java.time.Duration
 import android.Manifest
 import android.content.Context
-import android.content.IntentFilter
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.rememberLazyListState
 import org.burnoutcrew.reorderable.*
 import androidx.compose.material.icons.filled.InsertChart
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import com.bbks.mydailytracker.ui.common.MyAppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HabitTrackerScreen(viewModel: HabitViewModel, onNavigateToStats: () -> Unit) {
+fun HabitTrackerScreen(
+    viewModel: HabitViewModel,
+    onNavigateToStats: () -> Unit,
+    onNavigateToDetail: (Int) -> Unit
+) {
     val sortedHabits by viewModel.sortedHabits.collectAsState()
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
@@ -46,172 +67,244 @@ fun HabitTrackerScreen(viewModel: HabitViewModel, onNavigateToStats: () -> Unit)
     val completedCount = habitChecks.values.count { it.date == todayString }
 
     var newHabitName by remember { mutableStateOf("") }
-    val selectedHabitState = remember { mutableStateOf<Habit?>(null) }
     var showSettings by remember { mutableStateOf(false) }
-
     val sortOption by viewModel.sortOption.collectAsState()
-    val alarmEnabled by viewModel.alarmEnabled.collectAsState()
-    val autoDelete by viewModel.autoDelete.collectAsState()
-
     val scope = rememberCoroutineScope()
-
-    RequestNotificationPermission()
-
-    val context = LocalContext.current
-    DisposableEffect(Unit) {
-        val receiver = HabitRefreshReceiver {
-            scope.launch {
-                viewModel.refreshHabits()
-            }
+    val listState = rememberLazyListState()
+    val reorderState = rememberReorderableLazyListState(
+        listState = listState,
+        onMove = { from, to ->
+            viewModel.setSortOption(SortOption.MANUAL)
+            viewModel.reorderHabits(from.index, to.index)
         }
-        val intentFilter = IntentFilter("com.bbks.mydailytracker.HABITS_REFRESH")
+    )
+    val draggingIndex = reorderState.draggingItemIndex
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var showDeleteDialog by remember { mutableStateOf<Habit?>(null) }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            @Suppress("DEPRECATION")
-            context.registerReceiver(receiver, intentFilter)
-        }
-
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-    }
-
-    if (selectedHabitState.value != null) {
-        HabitDetailScreen(
-            habit = selectedHabitState.value!!,
-            viewModel = viewModel,
-            onBack = { selectedHabitState.value = null }
-        )
-    } else {
-        Scaffold(
-            modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues()),
-            topBar = {
-                TopBarWithCountdownAndSettings(
-                    endTime = endTime,
-                    alarmEnabled = alarmEnabled,
-                    context = context,
-                    onSettingsClick = { showSettings = true },
-                    onStatsClick = onNavigateToStats
-                )
-            },
-            bottomBar = { AdMobBanner() }
-        ) { padding ->
-            val listState = rememberLazyListState()
-            var hasShownManualToast by remember { mutableStateOf(false) }
-
-            val reorderState = rememberReorderableLazyListState(
-                listState = listState,
-                onMove = { from, to ->
-                if (sortOption != SortOption.MANUAL) {
-                    viewModel.setSortOption(SortOption.MANUAL)
-                    if (!hasShownManualToast) {
-                        Toast.makeText(context, "사용자 지정 정렬로 전환되었습니다", Toast.LENGTH_SHORT).show()
-                        hasShownManualToast = true
-                    }
-                }
-                viewModel.reorderHabits(from.index, to.index)
-            })
-
-            Column(
+    Scaffold(
+        containerColor = Color(0xFFF7EBD5),
+        topBar = {
+            TopBarWithCountdownAndSettings(
+                endTime = endTime,
+                alarmEnabled = viewModel.alarmEnabled.collectAsState().value,
+                context = LocalContext.current,
+                onSettingsClick = { showSettings = true },
+                onStatsClick = onNavigateToStats
+            )
+        },
+        bottomBar = { AdMobBanner() }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(Color(0xFFFDF5E6), shape = RoundedCornerShape(24.dp))
+                .padding(16.dp)
+                .navigationBarsPadding()
+        ) {
+            // 입력창
+            Row(
                 modifier = Modifier
-                    .padding(padding)
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    TextField(
-                        value = newHabitName,
-                        onValueChange = { newHabitName = it },
-                        label = { Text("새로운 목표 아이템") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
+                OutlinedTextField(
+                    value = newHabitName,
+                    onValueChange = { newHabitName = it },
+                    placeholder = { Text("새로운 목표 아이템", modifier = Modifier.padding(start = 4.dp)) },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedPlaceholderColor = Color.Gray,
+                        unfocusedPlaceholderColor = Color.Gray,
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color(0xFFBDBDBD),
+                        unfocusedIndicatorColor = Color(0xFFBDBDBD),
+                        focusedContainerColor = Color(0xFFFFF8E1),
+                        unfocusedContainerColor = Color(0xFFFFF8E1)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
                         if (newHabitName.isNotBlank()) {
                             viewModel.addHabit(newHabitName)
                             newHabitName = ""
+                            keyboardController?.hide()
                         }
-                    }) {
-                        Text("추가")
-                    }
+                    },
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF8BC34A),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("추가")
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            // 완료 수 & 진행 바
+            Text(
+                text = "🏆 오늘 완료: $completedCount / ${sortedHabits.size}",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Color(0xFF212121),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+            )
+            LinearProgressIndicator(
+                progress = if (sortedHabits.isNotEmpty()) completedCount / sortedHabits.size.toFloat() else 0f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                color = Color(0xFF8BC34A),
+                trackColor = Color(0xFFE0E0E0)
+            )
 
-                if (sortedHabits.isNotEmpty()) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "🏆 오늘 완료: $completedCount / ${sortedHabits.size}",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LinearProgressIndicator(
-                            progress = completedCount / sortedHabits.size.toFloat(),
+            Divider(color = Color(0xFFEADBB6), thickness = 1.dp)
+
+            // 습관 리스트
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .reorderable(reorderState)
+                    .detectReorderAfterLongPress(reorderState)
+                    .navigationBarsPadding()
+            ) {
+                itemsIndexed(sortedHabits) { index, habit ->
+                    ReorderableItem(reorderState, key = habit.id) {
+                        val isChecked = habitChecks[habit.id]?.let {
+                            it.isCompleted && it.date == todayString
+                        } ?: false
+                        val isDragging = index == draggingIndex
+                        val scale by animateFloatAsState(if (isDragging) 1.05f else 1f)
+                        val elevation = if (isDragging) 8.dp else 0.dp
+                        val bgColor = when {
+                            isDragging -> Color(0xFFFFF3E0)
+                            isChecked -> Color(0xFFE6F4EA).copy(alpha = 0.6f)
+                            else -> Color.Transparent
+                        }
+
+                        Row(
                             modifier = Modifier
+                                .detectReorder(reorderState)
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
+                                .shadow(elevation, RoundedCornerShape(12.dp))
                                 .fillMaxWidth()
-                                .padding(horizontal = 8.dp),
-                            color = Color(0xFF4CAF50)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
+                                .padding(vertical = 4.dp)
+                                .background(bgColor)
+                                .animateContentSize()
+                                .clickable {
+                                    onNavigateToDetail(habit.id)
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconToggleButton(
+                                checked = isChecked,
+                                onCheckedChange = {
+                                    scope.launch { viewModel.toggleHabitCheck(habit) }
+                                }
+                            ) {
+                                if (isChecked) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .background(
+                                                Color(0xFF8BC34A),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                            .padding(4.dp)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .border(
+                                                2.dp,
+                                                Color(0xFF795548),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    )
+                                }
+                            }
 
-                if (sortedHabits.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 48.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("매일의 작은 루틴이 큰 변화를 만듭니다!")
-                    }
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .reorderable(reorderState)
-                            .detectReorderAfterLongPress(reorderState)
-                    ) {
-                        items(sortedHabits, key = { it.id }) { habit ->
-                            ReorderableItem(state = reorderState, key = habit.id) { isDragging ->
-                                val isChecked = habitChecks[habit.id]?.let {
-                                    it.isCompleted && it.date == todayString
-                                } ?: false
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                                val itemModifier = Modifier
-                                    .background(if (isDragging) Color.LightGray else Color.Transparent)
-                                    .animateItemPlacement()
+                            Text(
+                                text = habit.name,
+                                modifier = Modifier.weight(1f).alpha(if (isChecked) 0.5f else 1f),
+                                textDecoration = if (isChecked) TextDecoration.LineThrough else null,
+                                color = Color.Black,
+                                fontWeight = FontWeight.Medium
+                            )
 
-                                HabitItem(
-                                    habit = habit,
-                                    isChecked = isChecked,
-                                    onCheckToggle = {
-                                        scope.launch { viewModel.toggleHabitCheck(habit) }
-                                    },
-                                    onClick = { selectedHabitState.value = habit },
-                                    onRemove = { viewModel.deleteHabit(it) },
-                                    modifier = itemModifier
+                            IconButton(onClick = { showDeleteDialog = habit }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "삭제",
+                                    tint = Color.Black
                                 )
                             }
+                        }
+
+                        // 삭제 확인 다이얼로그
+                        if (showDeleteDialog != null) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialog = null },
+                                title = { Text("삭제 확인") },
+                                text = {
+                                    // 흔들림 방지를 위해 Box로 높이 고정
+                                    Box(Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp)
+                                    ) {
+                                        Text(
+                                            buildAnnotatedString {
+                                                append("‘")
+                                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                                    append(showDeleteDialog?.name ?: "")
+                                                }
+                                                append("’을(를) 삭제하시겠습니까?")
+                                            },
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        viewModel.deleteHabit(showDeleteDialog!!)
+                                        showDeleteDialog = null
+                                    }) {
+                                        Text("삭제", color = Color.Red)
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDeleteDialog = null }) {
+                                        Text("취소")
+                                    }
+                                }
+                            )
+                        }
+
+                        if (index != 0) {
+                            Divider(color = Color(0xFFEADBB6), thickness = 1.dp)
                         }
                     }
                 }
             }
 
             if (showSettings) {
-                SettingsDialog(
-                    viewModel = viewModel,
-                    onDismiss = { showSettings = false }
-                )
+                SettingsDialog(viewModel = viewModel, onDismiss = { showSettings = false })
             }
         }
     }
@@ -248,6 +341,7 @@ fun TopBarWithCountdownAndSettings(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .statusBarsPadding()
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

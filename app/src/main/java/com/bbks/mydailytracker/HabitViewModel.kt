@@ -221,4 +221,11 @@ class HabitViewModel(
             refreshHabitChecks(loadedHabits)
         }
     }
+
+    fun getHabitById(habitId: Int): StateFlow<Habit?> =
+        habitDao.getHabitByIdFlow(habitId).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            null
+        )
 }

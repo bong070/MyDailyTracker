@@ -41,6 +41,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
 }
 
 dependencies {
@@ -49,7 +53,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
+    implementation("androidx.compose.ui:ui-graphics:1.6.1")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
@@ -60,6 +64,7 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.sheets.dialogs.core)
     implementation(libs.sheets.dialogs.calendar)
+    implementation("androidx.compose.foundation:foundation")
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
@@ -69,6 +74,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.compose.material:material-icons-extended:1.6.1")
     implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     kapt(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
