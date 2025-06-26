@@ -17,6 +17,7 @@ import com.bbks.mydailytracker.ui.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.bbks.mydailytracker.reset.ResetAlarmHelper
 
 class MainActivity : ComponentActivity() {
 
@@ -47,16 +48,6 @@ class MainActivity : ComponentActivity() {
         val factory = HabitViewModelFactory(habitDao, habitCheckDao, settingsRepo, habitRepo)
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
-        val resetManager = ResetManager(applicationContext)
-        val resetLogic = HabitResetLogic(habitRepo)
-
-        if (resetManager.shouldExecuteReset()) {
-            lifecycleScope.launch {
-                resetLogic.executeReset()
-                resetManager.markResetDone()
-            }
-        }
-
         MobileAds.initialize(this) {}
 
         setContent {
@@ -75,7 +66,10 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("statistics") {
-                        StatisticsScreen(navController)
+                        StatisticsScreen(
+                            navController = navController,
+                            viewModel = viewModel
+                        )
                     }
 
                     composable("detail/{habitId}") { backStackEntry ->
@@ -91,5 +85,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
     }
 }

@@ -74,6 +74,8 @@
             android:name=".AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+        <service android:name=".reset.ResetService" android:exported="false" />
+        <receiver android:name=".reset.ResetAlarmReceiver" android:exported="false" />
 
     </application>
 

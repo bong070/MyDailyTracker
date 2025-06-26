@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,14 +15,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
-import com.bbks.mydailytracker.R
+import com.bbks.mydailytracker.HabitViewModel
+import com.bbks.mydailytracker.model.DayStats
 import com.bbks.mydailytracker.ui.common.MyAppTopBar
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -39,26 +35,18 @@ data class DayStats(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsScreen(navController: NavController) {
+fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
     val today = LocalDate.now()
     var currentStartOfWeek by remember { mutableStateOf(today.with(DayOfWeek.MONDAY)) }
-
-    val stats = listOf(
-        DayStats("M", 3, 1, listOf("Water")),
-        DayStats("T", 2, 2, listOf("Workout", "Read")),
-        DayStats("W", 4, 0, emptyList()),
-        DayStats("T", 3, 1, listOf("Stretch")),
-        DayStats("F", 2, 2, listOf("Workout", "Read")),
-        DayStats("S", 5, 0, emptyList()),
-        DayStats("S", 3, 1, listOf("Wake Early"))
-    )
 
     val endOfWeek = currentStartOfWeek.plusDays(6)
     val formatter = DateTimeFormatter.ofPattern("M/d/yyyy")
     val dateRangeText = "${currentStartOfWeek.format(formatter)} - ${endOfWeek.format(formatter)}"
 
     var selectedDay by remember { mutableStateOf(0) }
-    val failedHabits = stats.getOrNull(selectedDay)?.failedHabits.orEmpty()
+    val stats by viewModel.getWeekStatsForUI().collectAsState()
+    val selectedDayIndex = selectedDay.coerceAtMost(stats.lastIndex)
+    val failedHabits = stats.getOrNull(selectedDayIndex)?.failedHabits.orEmpty()
     val successColor = MaterialTheme.colorScheme.primary
     val failureColor = MaterialTheme.colorScheme.error
 
@@ -95,7 +83,7 @@ fun StatisticsScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp), // 위만 둥글게
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
                     colors = CardDefaults.cardColors(containerColor = emphasizedCardBackground),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
@@ -158,21 +146,25 @@ fun StatisticsScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                BarChart(
-                    stats = stats,
-                    selectedDay = selectedDay,
-                    onDaySelected = { selectedDay = it },
-                    successColor = successColor,
-                    failureColor = failureColor
-                )
+                if (stats.isNotEmpty()) {
+                    BarChart(
+                        stats = stats,
+                        selectedDay = selectedDay,
+                        onDaySelected = { selectedDay = it },
+                        successColor = successColor,
+                        failureColor = failureColor
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    "Failed Habits - ${stats[selectedDay].label}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black,
-                )
+                if (stats.isNotEmpty()) {
+                    Text(
+                        "Failed Habits - ${stats.getOrNull(selectedDay)?.label ?: "-"}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -196,8 +188,8 @@ fun StatisticsScreen(navController: NavController) {
                     colors = CardDefaults.cardColors(
                         containerColor = emphasizedCardBackground
                     ),
-                    shape = RoundedCornerShape(12.dp), // 강조를 위한 라운드 처리
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // 살짝 음영
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
                         text = habit,
@@ -238,7 +230,6 @@ fun BarChart(
     val maxBarHeight = 160.dp
     val gridLineColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
     val emphasizedCardBackground = Color(0xFFFFF3C0)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -273,6 +264,7 @@ fun BarChart(
 
                 stats.forEachIndexed { index, day ->
                     val total = day.success + day.failure
+                    if (total == 0) return@forEachIndexed
                     val successRatio = if (total == 0) 0f else day.success.toFloat() / total
                     val failureRatio = 1f - successRatio
 
@@ -282,18 +274,28 @@ fun BarChart(
                     val failureHeight = barMaxHeightPx * failureRatio
                     val successHeight = barMaxHeightPx * successRatio
 
-                    drawRoundRect(
-                        color = failureColor,
-                        topLeft = Offset(left, bottom - failureHeight - successHeight),
-                        size = androidx.compose.ui.geometry.Size(barWidth.toPx(), failureHeight),
-                        cornerRadius = CornerRadius(6f, 6f)
-                    )
-                    drawRoundRect(
-                        color = successColor,
-                        topLeft = Offset(left, bottom - successHeight),
-                        size = androidx.compose.ui.geometry.Size(barWidth.toPx(), successHeight),
-                        cornerRadius = CornerRadius(6f, 6f)
-                    )
+                    if (failureHeight > 0f) {
+                        drawRoundRect(
+                            color = failureColor,
+                            topLeft = Offset(left, bottom - failureHeight - successHeight),
+                            size = androidx.compose.ui.geometry.Size(
+                                barWidth.toPx(),
+                                failureHeight
+                            ),
+                            cornerRadius = CornerRadius(6f, 6f)
+                        )
+                    }
+                    if (failureHeight > 0f) {
+                        drawRoundRect(
+                            color = successColor,
+                            topLeft = Offset(left, bottom - successHeight),
+                            size = androidx.compose.ui.geometry.Size(
+                                barWidth.toPx(),
+                                successHeight
+                            ),
+                            cornerRadius = CornerRadius(6f, 6f)
+                        )
+                    }
                 }
             }
 

@@ -16,7 +16,10 @@ data class Habit(
     val repeatDays: List<Int> = emptyList(), // 1(월) ~ 7(일)
 
     @ColumnInfo(name = "order_index")
-    val order: Int = 0
+    val order: Int = 0,
+
+    @ColumnInfo(name = "note")
+    val note: String? = null
 )
 
 val Habit.alarmTime: LocalTime?

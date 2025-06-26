@@ -10,7 +10,7 @@ class HabitResetLogic(
     private val habitRepository: HabitRepository
 ) {
     suspend fun executeReset() = withContext(Dispatchers.IO) {
-        val today = LocalDate.now()
+        val today = LocalDate.now().minusDays(1)
         val todayStr = today.toString()
         val dayOfWeek = today.dayOfWeek.value // 1 (Mon) ~ 7 (Sun)
         val tomorrow = today.plusDays(1)

@@ -63,7 +63,7 @@ fun SettingsDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                Text("목표 종료 시간", style = MaterialTheme.typography.labelLarge)
+                /*Text("목표 종료 시간", style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(4.dp))
                 Text("%02d:%02d".format(endTime.hour, endTime.minute))
                 val context = LocalContext.current
@@ -78,7 +78,7 @@ fun SettingsDialog(
                     Text("시간 선택")
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))*/
 
                 // 2️⃣ 정렬 방식
                 Text("정렬 방식", style = MaterialTheme.typography.labelLarge)

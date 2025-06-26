@@ -34,11 +34,17 @@ import androidx.core.content.ContextCompat
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import com.bbks.mydailytracker.ui.common.MyAppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,6 +100,7 @@ fun HabitDetailScreen(
     val selectedTextColor = Color.White
     val unselectedTextColor = Color.Black
     val beigeBackground = Color(0xFFFFF8E1)
+    var noteText by remember { mutableStateOf(habit.note ?: "") }
 
     Scaffold(
         containerColor = statusBarColor,
@@ -114,6 +121,7 @@ fun HabitDetailScreen(
             ) {
                 Button(onClick = {
                     val updatedHabit = habit.copy(
+                        note = noteText,
                         alarmHour = timePickerState.value.hour,
                         alarmMinute = timePickerState.value.minute,
                         alarmEnabled = alarmEnabled.value,
@@ -242,6 +250,18 @@ fun HabitDetailScreen(
                     alarmEnabled.value = it
                 })
             }
+
+            Spacer(Modifier.height(20.dp))
+            Text("📝 메모", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+
+            LinedNoteField(
+                text = noteText,
+                onTextChange = { noteText = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            )
         }
     }
 }
@@ -413,5 +433,53 @@ fun setAskedNotificationPermission(context: Context) {
     prefs.edit().putBoolean("notification_permission_asked", true).apply()
 }
 
+@Composable
+fun LinedNoteField(
+    text: String,
+    onTextChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val lineHeight = 24.dp
+    val lineColor = Color(0xFFBDBDBD)
+    val noteFont = FontFamily(
+        Font(R.font.nanum_pen_script)
+    )
 
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color(0xFFFFF8E1))
+    ) {
+        // 밑줄 배경
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val totalLines = size.height / lineHeight.toPx()
+            repeat(totalLines.toInt()) { i ->
+                val y = lineHeight.toPx() * (i + 1)
+                drawLine(
+                    color = lineColor,
+                    start = androidx.compose.ui.geometry.Offset(0f, y + 6f),
+                    end = androidx.compose.ui.geometry.Offset(size.width, y + 6f),
+                    strokeWidth = 1f
+                )
+            }
+        }
+
+        BasicTextField(
+            value = text,
+            onValueChange = onTextChange,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxSize(),
+            textStyle = LocalTextStyle.current.copy(
+                fontSize = 16.sp,
+                fontFamily = noteFont,
+                lineHeight = 24.sp,
+                color = Color(0xFF4E4E4E)
+            ),
+            cursorBrush = SolidColor(Color.DarkGray),
+            maxLines = Int.MAX_VALUE
+        )
+    }
+}
 

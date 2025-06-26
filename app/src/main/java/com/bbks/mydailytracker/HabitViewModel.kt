@@ -9,8 +9,12 @@ import com.bbks.mydailytracker.data.UserPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import com.bbks.mydailytracker.model.DayStats
 
 class HabitViewModel(
     private val habitDao: HabitDao,
@@ -228,4 +232,39 @@ class HabitViewModel(
             SharingStarted.WhileSubscribed(5000),
             null
         )
+
+    fun getWeekStatsForUI(): StateFlow<List<DayStats>> {
+        return weeklyStats
+            .combine(habits) { results, habitList ->
+                val habitMap = habitList.associateBy { it.id }
+
+                results
+                    .groupBy { it.date } // 날짜별로 묶기
+                    .toSortedMap()       // 월~일 순 정렬
+                    .map { (date, entries) ->
+                        val successCount = entries.count { it.isSuccess }
+                        val failureCount = entries.count { !it.isSuccess }
+
+                        val failedHabits = entries
+                            .filter { !it.isSuccess }
+                            .mapNotNull { habitMap[it.habitId]?.name }
+
+                        val label = LocalDate.parse(date).dayOfWeek
+                            .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault())
+                            .take(1) // "M", "T", ...
+
+                        DayStats(
+                            label = label,
+                            success = successCount,
+                            failure = failureCount,
+                            failedHabits = failedHabits
+                        )
+                    }
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
+    }
 }
