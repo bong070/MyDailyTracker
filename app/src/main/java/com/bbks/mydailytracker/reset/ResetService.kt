@@ -6,6 +6,7 @@ import android.os.IBinder
 import android.util.Log
 import com.bbks.mydailytracker.HabitDatabase
 import com.bbks.mydailytracker.HabitRepository
+import com.bbks.mydailytracker.util.ResetLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,9 +18,11 @@ class ResetService : Service() {
             val habitRepo = HabitRepository(
                 db.habitDao(), db.habitCheckDao(), db.dailyHabitResultDao()
             )
-            val resetLogic = com.bbks.mydailytracker.HabitResetLogic(habitRepo)
+            val resetLogic = com.bbks.mydailytracker.HabitResetLogic(applicationContext, habitRepo)
             resetLogic.executeReset()
-            Log.d("ResetService", "executeReset() 완료")
+            ResetLogger.logResetTime(applicationContext)
+            ResetLogger.log(applicationContext, "ResetService executeReset() 완료")
+            ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
             stopSelf()
         }
         return START_NOT_STICKY

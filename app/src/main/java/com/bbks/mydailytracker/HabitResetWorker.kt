@@ -19,7 +19,7 @@ class HabitResetWorker(
         val db = HabitDatabase.getDatabase(applicationContext)
         val habitRepository = HabitRepository(db.habitDao(), db.habitCheckDao(), db.dailyHabitResultDao())
 
-        val resetLogic = HabitResetLogic(habitRepository)
+        val resetLogic = HabitResetLogic(applicationContext, habitRepository)
         val habits = HabitDatabase.getDatabase(applicationContext).habitDao().getAllHabitsOnce()
         Log.d("ResetWorker", "DB에 있는 습관 개수: ${habits.size}")
         resetLogic.executeReset()

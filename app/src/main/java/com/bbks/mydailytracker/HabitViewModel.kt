@@ -29,7 +29,7 @@ class HabitViewModel(
     private val _habitChecks = MutableStateFlow<Map<Int, HabitCheck>>(emptyMap())
     val habitChecks: StateFlow<Map<Int, HabitCheck>> = _habitChecks
 
-    private val _endTime = MutableStateFlow(LocalTime.of(23, 59, 59))
+    private val _endTime = MutableStateFlow(LocalTime.of(0, 0, 0))
     val endTime: StateFlow<LocalTime> = _endTime
 
     private val _sortOption = MutableStateFlow(SortOption.ALPHABETICAL)

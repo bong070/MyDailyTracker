@@ -60,9 +60,14 @@ fun HabitTrackerScreen(
     onNavigateToStats: () -> Unit,
     onNavigateToDetail: (Int) -> Unit
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshHabits()
+    }
+
     val sortedHabits by viewModel.sortedHabits.collectAsState()
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
-    val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(23, 59, 59))
+    val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(0, 0, 0))
     val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val completedCount = habitChecks.values.count { it.date == todayString }
 

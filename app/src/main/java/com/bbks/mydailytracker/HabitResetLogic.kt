@@ -5,11 +5,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
+import android.content.Context
+import java.time.LocalTime
 
 class HabitResetLogic(
+    private val context: Context,
     private val habitRepository: HabitRepository
 ) {
     suspend fun executeReset() = withContext(Dispatchers.IO) {
+        val prefs = context.getSharedPreferences("reset_prefs", Context.MODE_PRIVATE)
+        val lastResetDate = prefs.getString("last_reset_date", null)
         val today = LocalDate.now().minusDays(1)
         val todayStr = today.toString()
         val dayOfWeek = today.dayOfWeek.value // 1 (Mon) ~ 7 (Sun)
@@ -19,6 +24,18 @@ class HabitResetLogic(
 
         Log.d("HabitResetLogic", "Reset logic 실행됨 - 오늘: $today")
         val allHabits = habitRepository.getAllHabitsOnce()
+
+        val now = LocalTime.now()
+        if (now.hour != 0) {
+            Log.d("ResetLogic", "현재 시간은 자정이 아닙니다. 리셋 중단됨.")
+            return@withContext
+        }
+
+        if (lastResetDate == LocalDate.now().toString()) {
+            Log.d("Reset", "오늘 이미 실행됨")
+            return@withContext
+        }
+
 
         for (habit in allHabits) {
             val check = habitRepository.getCheckForHabit(habit.id, todayStr)
@@ -52,5 +69,6 @@ class HabitResetLogic(
             // ✅ 4. 오늘이 지정 요일이 아니더라도, 월/수 등의 케이스로 습관을 유지해야 함 → 삭제하지 않음
             // 아무것도 안 하면 자동 유지됨
         }
+        prefs.edit().putString("last_reset_date", LocalDate.now().toString()).apply()
     }
 }
