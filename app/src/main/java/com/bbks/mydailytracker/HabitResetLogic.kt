@@ -36,7 +36,6 @@ class HabitResetLogic(
             return@withContext
         }
 
-
         for (habit in allHabits) {
             val check = habitRepository.getCheckForHabit(habit.id, todayStr)
             val wasChecked = check != null

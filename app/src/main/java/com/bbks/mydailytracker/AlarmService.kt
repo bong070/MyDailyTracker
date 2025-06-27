@@ -12,9 +12,21 @@ class AlarmService : Service() {
 
     private lateinit var mediaPlayer: MediaPlayer
     private var habitTitle: String = "알람이 울리고 있어요!"
+    private var notificationId: Int = 1
+
+    companion object {
+        var isRunning = false
+    }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (isRunning) return START_NOT_STICKY
+        isRunning = true
+
         habitTitle = intent?.getStringExtra("habitTitle") ?: "알람이 울리고 있어요!"
+        val habitId = intent?.getIntExtra("habitId", -1) ?: -1
+        val dayOfWeek = intent?.getIntExtra("dayOfWeek", -1) ?: -1
+        notificationId = if (habitId != -1 && dayOfWeek != -1) habitId * 10 + dayOfWeek else 1
         showAlarmNotification()
         return START_NOT_STICKY
     }
@@ -36,7 +48,7 @@ class AlarmService : Service() {
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
-            0,
+            notificationId,
             fullScreenIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -44,7 +56,7 @@ class AlarmService : Service() {
         val deleteIntent = Intent(this, AlarmStopReceiver::class.java)
         val deletePendingIntent = PendingIntent.getBroadcast(
             this,
-            0,
+            notificationId,
             deleteIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -70,7 +82,7 @@ class AlarmService : Service() {
             .setAutoCancel(true)
             .build()
 
-        startForeground(1, notification)
+        startForeground(notificationId, notification)
 
         // 전체화면 AlarmActivity 실행
         startActivity(fullScreenIntent)

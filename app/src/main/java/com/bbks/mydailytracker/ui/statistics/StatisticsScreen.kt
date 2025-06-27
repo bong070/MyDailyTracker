@@ -16,8 +16,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bbks.mydailytracker.HabitViewModel
 import com.bbks.mydailytracker.model.DayStats
@@ -45,6 +47,7 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
     var selectedDay by remember { mutableStateOf(0) }
     val stats by viewModel.getWeekStatsForUI().collectAsState()
+    var selectedStats = stats.getOrNull(selectedDay)
     val selectedDayIndex = selectedDay.coerceAtMost(stats.lastIndex)
     val failedHabits = stats.getOrNull(selectedDayIndex)?.failedHabits.orEmpty()
     val successColor = MaterialTheme.colorScheme.primary
@@ -57,6 +60,10 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
     val context = LocalContext.current
     val beigeBackground = Color(0xFFFFF8E1)
     val emphasizedCardBackground = Color(0xFFFFF3C0)
+    var showSuccessList by remember { mutableStateOf(false) }
+    var showFailureList by remember { mutableStateOf(false) }
+    val successCardColor = Color(0xFFC8E6C9) // Light green
+    val failureCardColor = Color(0xFFFFCDD2) // Light red
 
     Scaffold(
         topBar = {
@@ -68,15 +75,43 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
         },
         containerColor = beigeBackground
     ) { innerPadding ->
+        val contentBottomPadding = innerPadding.calculateBottomPadding()
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(
+                    top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
+                            56.dp,
+                    bottom = contentBottomPadding
+                )
                 .fillMaxSize()
                 .background(beigeBackground)
-                .systemBarsPadding()
-                .padding(16.dp)
+                .navigationBarsPadding()
+                .padding(4.dp)
         ) {
             item {
+                val selectedWeekRange = currentStartOfWeek..endOfWeek
+                val totalSuccess = stats
+                    .filter { it.date in selectedWeekRange }
+                    .sumOf { it.success }
+
+                val totalFailure = stats
+                    .filter { it.date in selectedWeekRange }
+                    .sumOf { it.failure }
+
+
+                Text(
+                    text = "📊 총 성공: $totalSuccess / 실패: $totalFailure",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp, bottom = 8.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // 주간 통계 제목
@@ -145,7 +180,6 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-
                 if (stats.isNotEmpty()) {
                     BarChart(
                         stats = stats,
@@ -158,49 +192,157 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                if (stats.isNotEmpty()) {
-                    Text(
-                        "Failed Habits - ${stats.getOrNull(selectedDay)?.label ?: "-"}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black,
-                    )
-                }
+                val selectedDayStats = stats.getOrNull(selectedDayIndex)
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (failedHabits.isEmpty()) {
+                if (selectedDayStats != null) {
                     Text(
-                        "No failed habits 😊",
+                        text = "✅ ${selectedDayStats.label} - 성공: ${selectedDayStats.success}, 실패: ${selectedDayStats.failure}",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = Color.Black,
-                        textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp)
+                            .padding(vertical = 4.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
-            }
 
-            items(failedHabits) { habit ->
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ✅ 성공한 목표
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = emphasizedCardBackground
-                    ),
+                    modifier = Modifier.fillMaxWidth().clickable { showSuccessList = !showSuccessList },
+                    colors = CardDefaults.cardColors(containerColor = successCardColor),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
-                        text = habit,
-                        modifier = Modifier.padding(12.dp),
-                        color = Color.Black
+                        "✅ 성공한 목표 - ${selectedStats?.label ?: "-"}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        textAlign = TextAlign.Center
                     )
+                }
+
+                if (showSuccessList) {
+                    val successHabits = selectedStats?.successHabits.orEmpty()
+                    if (successHabits.isEmpty()) {
+                        Text(
+                            "No successful habits 🎉",
+                            color = Color.Black,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                        )
+                    } else {
+                        successHabits.forEach {
+                            HabitCard(it, emphasizedCardBackground)
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                // ✅ 실패한 목표
+                Card(
+                    onClick = { showFailureList = !showFailureList },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = failureCardColor),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Text(
+                        "❌ 실패한 목표 - ${selectedStats?.label ?: "-"}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                if (showFailureList) {
+                    val failedHabits = selectedStats?.failedHabits.orEmpty()
+                    if (failedHabits.isEmpty()) {
+                        Text(
+                            "No failed habits 😊",
+                            color = Color.Black,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                        )
+                    } else {
+                        failedHabits.forEach {
+                            HabitCard(it, emphasizedCardBackground)
+                        }
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+fun HabitCard(habit: String, background: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = background),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Text(
+            text = habit,
+            modifier = Modifier.padding(12.dp),
+            color = Color.Black
+        )
+    }
+}
+
+
+/*Spacer(modifier = Modifier.height(24.dp))
+
+if (stats.isNotEmpty()) {
+    Text(
+        "Failed Habits - ${stats.getOrNull(selectedDay)?.label ?: "-"}",
+        style = MaterialTheme.typography.titleMedium,
+        color = Color.Black,
+    )
+}
+
+Spacer(modifier = Modifier.height(8.dp))
+
+if (failedHabits.isEmpty()) {
+    Text(
+        "No failed habits 😊",
+        color = Color.Black,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+    )
+}
+}
+
+items(failedHabits) { habit ->
+Card(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 4.dp),
+    colors = CardDefaults.cardColors(
+        containerColor = emphasizedCardBackground
+    ),
+    shape = RoundedCornerShape(12.dp),
+    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+) {
+    Text(
+        text = habit,
+        modifier = Modifier.padding(12.dp),
+        color = Color.Black
+    )
+}
+}
+}
+}
+}*/
 
 @Composable
 fun LegendIndicator(color: Color, label: String) {

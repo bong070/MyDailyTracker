@@ -249,15 +249,21 @@ class HabitViewModel(
                             .filter { !it.isSuccess }
                             .mapNotNull { habitMap[it.habitId]?.name }
 
+                        val successHabits = entries
+                            .filter { it.isSuccess }
+                            .mapNotNull { habitMap[it.habitId]?.name }
+
                         val label = LocalDate.parse(date).dayOfWeek
                             .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault())
                             .take(1) // "M", "T", ...
 
                         DayStats(
+                            date = LocalDate.parse(date),
                             label = label,
                             success = successCount,
                             failure = failureCount,
-                            failedHabits = failedHabits
+                            failedHabits = failedHabits,
+                            successHabits = successHabits
                         )
                     }
             }

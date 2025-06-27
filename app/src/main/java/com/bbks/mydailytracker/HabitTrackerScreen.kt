@@ -8,7 +8,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -51,7 +50,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import com.bbks.mydailytracker.ui.common.MyAppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -69,7 +67,7 @@ fun HabitTrackerScreen(
     val habitChecks by viewModel.habitChecks.collectAsState(initial = emptyMap())
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(0, 0, 0))
     val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-    val completedCount = habitChecks.values.count { it.date == todayString }
+    val completedCount = habitChecks.values.count { it.date == todayString && it.isCompleted}
 
     var newHabitName by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
