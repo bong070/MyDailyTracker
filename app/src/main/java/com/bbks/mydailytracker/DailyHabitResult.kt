@@ -8,5 +8,6 @@ data class DailyHabitResult(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val habitId: Int,
     val date: String, // "yyyy-MM-dd"
-    val isSuccess: Boolean
+    val isSuccess: Boolean,
+    val habitName: String
 )

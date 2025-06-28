@@ -5,8 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,13 +32,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-data class DayStats(
-    val label: String,
-    val success: Int,
-    val failure: Int,
-    val failedHabits: List<String>
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
@@ -46,10 +43,11 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
     val dateRangeText = "${currentStartOfWeek.format(formatter)} - ${endOfWeek.format(formatter)}"
 
     var selectedDay by remember { mutableStateOf(0) }
+    val selectedWeekRange = currentStartOfWeek..endOfWeek
     val stats by viewModel.getWeekStatsForUI().collectAsState()
-    var selectedStats = stats.getOrNull(selectedDay)
+    val filteredStats = stats.filter { it.date in selectedWeekRange }
     val selectedDayIndex = selectedDay.coerceAtMost(stats.lastIndex)
-    val failedHabits = stats.getOrNull(selectedDayIndex)?.failedHabits.orEmpty()
+    val selectedStats = filteredStats.getOrNull(selectedDayIndex)
     val successColor = MaterialTheme.colorScheme.primary
     val failureColor = MaterialTheme.colorScheme.error
 
@@ -57,13 +55,10 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
         today.with(DayOfWeek.MONDAY).plusDays(7)
     )
 
-    val context = LocalContext.current
     val beigeBackground = Color(0xFFFFF8E1)
     val emphasizedCardBackground = Color(0xFFFFF3C0)
     var showSuccessList by remember { mutableStateOf(false) }
     var showFailureList by remember { mutableStateOf(false) }
-    val successCardColor = Color(0xFFC8E6C9) // Light green
-    val failureCardColor = Color(0xFFFFCDD2) // Light red
 
     Scaffold(
         topBar = {
@@ -89,7 +84,6 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
                 .padding(4.dp)
         ) {
             item {
-                val selectedWeekRange = currentStartOfWeek..endOfWeek
                 val totalSuccess = stats
                     .filter { it.date in selectedWeekRange }
                     .sumOf { it.success }
@@ -180,9 +174,10 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
                 if (stats.isNotEmpty()) {
                     BarChart(
-                        stats = stats,
+                        stats = filteredStats,
                         selectedDay = selectedDay,
                         onDaySelected = { selectedDay = it },
                         successColor = successColor,
@@ -192,7 +187,7 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                val selectedDayStats = stats.getOrNull(selectedDayIndex)
+                val selectedDayStats = filteredStats.getOrNull(selectedDayIndex)
 
                 if (selectedDayStats != null) {
                     Text(
@@ -210,67 +205,128 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ✅ 성공한 목표
                 Card(
-                    modifier = Modifier.fillMaxWidth().clickable { showSuccessList = !showSuccessList },
-                    colors = CardDefaults.cardColors(containerColor = successCardColor),
+                    onClick = { showSuccessList = !showSuccessList },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFA5D6A7)), // 톤 다운된 민트
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(
-                        "✅ 성공한 목표 - ${selectedStats?.label ?: "-"}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black,
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                if (showSuccessList) {
-                    val successHabits = selectedStats?.successHabits.orEmpty()
-                    if (successHabits.isEmpty()) {
-                        Text(
-                            "No successful habits 🎉",
-                            color = Color.Black,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-                        )
-                    } else {
-                        successHabits.forEach {
-                            HabitCard(it, emphasizedCardBackground)
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color.Black
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = selectedStats?.label?.takeIf { it.isNotBlank() }?.let {
+                                    "성공한 목표 - $it"
+                                } ?: "성공한 목표",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = if (showSuccessList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                        }
+                        if (showSuccessList) {
+                            Divider(color = Color.Gray.copy(alpha = 0.3f))
+                            val successHabits = selectedStats?.successHabits.orEmpty()
+                            if (successHabits.isEmpty()) {
+                                Text(
+                                    "성공한 목표가 없습니다.",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                )
+                            } else {
+                                successHabits.forEachIndexed { index, habit ->
+                                    Column {
+                                        Text(
+                                            text = habit,
+                                            modifier = Modifier.fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            color = Color.Black
+                                        )
+                                        if (index != successHabits.lastIndex)
+                                            Divider(color = Color.Gray.copy(alpha = 0.2f))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.height(4.dp))
-                // ✅ 실패한 목표
+
                 Card(
                     onClick = { showFailureList = !showFailureList },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = failureCardColor),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF28B82)), // 톤 다운된 라이트레드
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(
-                        "❌ 실패한 목표 - ${selectedStats?.label ?: "-"}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black,
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                if (showFailureList) {
-                    val failedHabits = selectedStats?.failedHabits.orEmpty()
-                    if (failedHabits.isEmpty()) {
-                        Text(
-                            "No failed habits 😊",
-                            color = Color.Black,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-                        )
-                    } else {
-                        failedHabits.forEach {
-                            HabitCard(it, emphasizedCardBackground)
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Cancel,
+                                contentDescription = null,
+                                tint = Color.Black
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = selectedStats?.label?.takeIf { it.isNotBlank() }?.let {
+                                    "실패한 목표 - $it"
+                                } ?: "실패한 목표",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = if (showFailureList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                        }
+                        if (showFailureList) {
+                            Divider(color = Color.Gray.copy(alpha = 0.3f))
+                            val failedHabits = selectedStats?.failedHabits.orEmpty()
+                            if (failedHabits.isEmpty()) {
+                                Text(
+                                    "실패한 목표가 없습니다. 🎉",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                )
+                            } else {
+                                failedHabits.forEachIndexed { index, habit ->
+                                    Column {
+                                        Text(
+                                            text = habit,
+                                            modifier = Modifier.fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            color = Color.Black
+                                        )
+                                        if (index != failedHabits.lastIndex)
+                                            Divider(color = Color.Gray.copy(alpha = 0.2f))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -297,53 +353,6 @@ fun HabitCard(habit: String, background: Color) {
     }
 }
 
-
-/*Spacer(modifier = Modifier.height(24.dp))
-
-if (stats.isNotEmpty()) {
-    Text(
-        "Failed Habits - ${stats.getOrNull(selectedDay)?.label ?: "-"}",
-        style = MaterialTheme.typography.titleMedium,
-        color = Color.Black,
-    )
-}
-
-Spacer(modifier = Modifier.height(8.dp))
-
-if (failedHabits.isEmpty()) {
-    Text(
-        "No failed habits 😊",
-        color = Color.Black,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp)
-    )
-}
-}
-
-items(failedHabits) { habit ->
-Card(
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 4.dp),
-    colors = CardDefaults.cardColors(
-        containerColor = emphasizedCardBackground
-    ),
-    shape = RoundedCornerShape(12.dp),
-    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-) {
-    Text(
-        text = habit,
-        modifier = Modifier.padding(12.dp),
-        color = Color.Black
-    )
-}
-}
-}
-}
-}*/
-
 @Composable
 fun LegendIndicator(color: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -368,15 +377,15 @@ fun BarChart(
     successColor: Color,
     failureColor: Color
 ) {
-    val barWidth = 20.dp
+    val barWidth = 14.dp
+    val gap = 4.dp
     val maxBarHeight = 160.dp
-    val gridLineColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+    val gridLineColor = Color.Gray.copy(alpha = 0.2f)
     val emphasizedCardBackground = Color(0xFFFFF3C0)
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(maxBarHeight + 40.dp),
-        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp), // 아래만 둥글게
+        modifier = Modifier.fillMaxWidth().height(maxBarHeight + 40.dp),
+        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
         colors = CardDefaults.cardColors(containerColor = emphasizedCardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -385,9 +394,8 @@ fun BarChart(
                 .fillMaxWidth()
                 .height(maxBarHeight + 40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(emphasizedCardBackground, shape = RoundedCornerShape(8.dp))
+                .background(emphasizedCardBackground)
                 .padding(vertical = 8.dp)
-
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val columnWidth = size.width / stats.size
@@ -404,47 +412,41 @@ fun BarChart(
                     )
                 }
 
+                val maxTotal = if (stats.isNotEmpty()) {
+                    stats.maxOf { it.success + it.failure }.coerceAtLeast(1)
+                } else {
+                    1 // 기본값
+                }
+
                 stats.forEachIndexed { index, day ->
                     val total = day.success + day.failure
                     if (total == 0) return@forEachIndexed
-                    val successRatio = if (total == 0) 0f else day.success.toFloat() / total
-                    val failureRatio = 1f - successRatio
 
-                    val left = columnWidth * index + (columnWidth - barWidth.toPx()) / 2
+                    val leftSuccess = columnWidth * index + (columnWidth - 2 * barWidth.toPx() - gap.toPx()) / 2
+                    val leftFailure = leftSuccess + barWidth.toPx() + gap.toPx()
                     val bottom = size.height - 20.dp.toPx()
 
-                    val failureHeight = barMaxHeightPx * failureRatio
-                    val successHeight = barMaxHeightPx * successRatio
+                    val successHeight = barMaxHeightPx * (day.success.toFloat() / maxTotal)
+                    val failureHeight = barMaxHeightPx * (day.failure.toFloat() / maxTotal)
 
-                    if (failureHeight > 0f) {
-                        drawRoundRect(
-                            color = failureColor,
-                            topLeft = Offset(left, bottom - failureHeight - successHeight),
-                            size = androidx.compose.ui.geometry.Size(
-                                barWidth.toPx(),
-                                failureHeight
-                            ),
-                            cornerRadius = CornerRadius(6f, 6f)
-                        )
-                    }
-                    if (failureHeight > 0f) {
-                        drawRoundRect(
-                            color = successColor,
-                            topLeft = Offset(left, bottom - successHeight),
-                            size = androidx.compose.ui.geometry.Size(
-                                barWidth.toPx(),
-                                successHeight
-                            ),
-                            cornerRadius = CornerRadius(6f, 6f)
-                        )
-                    }
+                    drawRoundRect(
+                        color = successColor,
+                        topLeft = Offset(leftSuccess, bottom - successHeight),
+                        size = Size(barWidth.toPx(), successHeight),
+                        cornerRadius = CornerRadius(6f, 6f)
+                    )
+
+                    drawRoundRect(
+                        color = failureColor,
+                        topLeft = Offset(leftFailure, bottom - failureHeight),
+                        size = Size(barWidth.toPx(), failureHeight),
+                        cornerRadius = CornerRadius(6f, 6f)
+                    )
                 }
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 4.dp),
+                modifier = Modifier.fillMaxSize().padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -453,9 +455,7 @@ fun BarChart(
                         text = day.label,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Black,
-                        modifier = Modifier
-                            .clickable { onDaySelected(index) }
-                            .padding(top = maxBarHeight)
+                        modifier = Modifier.clickable { onDaySelected(index) }.padding(top = maxBarHeight)
                     )
                 }
             }

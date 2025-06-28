@@ -43,7 +43,7 @@ class HabitResetLogic(
             Log.d("HabitResetLogic", "습관: ${habit.repeatDays.toString()}")
 
             // ✅ 1. 성공/실패 기록 저장 (예: HabitDailyResult 테이블로)
-            habitRepository.saveDailyResult(habit.id, todayStr, wasChecked)
+            habitRepository.saveDailyResult(habit.id, todayStr, wasChecked, habit.name)
 
             // ✅ 2. 반복 요일 없는 습관 → 삭제
             if (habit.repeatDays.isEmpty()) {

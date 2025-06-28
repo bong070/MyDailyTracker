@@ -42,8 +42,8 @@ class HabitRepository(
         habitCheckDao.deleteChecksForHabit(habitId)
     }
 
-    suspend fun saveDailyResult(habitId: Int, date: String, isSuccess: Boolean) {
-        val result = DailyHabitResult(habitId = habitId, date = date, isSuccess = isSuccess)
+    suspend fun saveDailyResult(habitId: Int, date: String, isSuccess: Boolean, habitName: String) {
+        val result = DailyHabitResult(habitId = habitId, date = date, isSuccess = isSuccess, habitName = habitName)
         resultDao.insert(result)
     }
 

@@ -245,14 +245,9 @@ class HabitViewModel(
                         val successCount = entries.count { it.isSuccess }
                         val failureCount = entries.count { !it.isSuccess }
 
-                        val failedHabits = entries
-                            .filter { !it.isSuccess }
-                            .mapNotNull { habitMap[it.habitId]?.name }
+                        val failedHabits = entries.filter { !it.isSuccess }.map { it.habitName }
 
-                        val successHabits = entries
-                            .filter { it.isSuccess }
-                            .mapNotNull { habitMap[it.habitId]?.name }
-
+                        val successHabits = entries.filter { it.isSuccess }.map { it.habitName }
                         val label = LocalDate.parse(date).dayOfWeek
                             .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault())
                             .take(1) // "M", "T", ...
