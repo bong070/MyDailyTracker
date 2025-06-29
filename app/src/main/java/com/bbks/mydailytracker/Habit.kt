@@ -19,7 +19,10 @@ data class Habit(
     val order: Int = 0,
 
     @ColumnInfo(name = "note")
-    val note: String? = null
+    val note: String? = null,
+
+    @ColumnInfo(name = "created_date")
+    val createdDate: String = java.time.LocalDate.now().toString()
 )
 
 val Habit.alarmTime: LocalTime?

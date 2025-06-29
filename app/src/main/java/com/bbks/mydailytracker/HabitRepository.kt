@@ -12,12 +12,6 @@ class HabitRepository(
     private val habitCheckDao: HabitCheckDao,
     private val resultDao: DailyHabitResultDao
 ) {
-    val allHabits: Flow<List<Habit>> = habitDao.getAllHabits()
-
-    suspend fun insert(habit: Habit) {
-        habitDao.insert(habit)
-    }
-
     suspend fun update(habit: Habit) {
         habitDao.update(habit)
     }
@@ -45,14 +39,6 @@ class HabitRepository(
     suspend fun saveDailyResult(habitId: Int, date: String, isSuccess: Boolean, habitName: String) {
         val result = DailyHabitResult(habitId = habitId, date = date, isSuccess = isSuccess, habitName = habitName)
         resultDao.insert(result)
-    }
-
-    suspend fun getResultsForHabit(habitId: Int): List<DailyHabitResult> {
-        return resultDao.getResultsForHabit(habitId)
-    }
-
-    suspend fun getResultsInRange(startDate: String, endDate: String): List<DailyHabitResult> {
-        return resultDao.getResultsInRange(startDate, endDate)
     }
 
     fun getWeeklyStats(): Flow<List<DailyHabitResult>> {

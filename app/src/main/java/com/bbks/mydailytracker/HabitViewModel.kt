@@ -106,7 +106,7 @@ class HabitViewModel(
     fun addHabit(name: String) {
         viewModelScope.launch {
             val lastOrder = habits.value.maxOfOrNull { it.order ?: 0 } ?: 0
-            habitDao.insert(Habit(name = name, order = lastOrder + 1)) // order 지정
+            habitDao.insert(Habit(name = name, order = lastOrder + 1, createdDate = LocalDate.now().toString())) // order 지정
         }
     }
 
@@ -242,6 +242,29 @@ class HabitViewModel(
                     .groupBy { it.date } // 날짜별로 묶기
                     .toSortedMap()       // 월~일 순 정렬
                     .map { (date, entries) ->
+                        val statDate = LocalDate.parse(date)
+                        val filteredEntries = entries.filter { result ->
+                            val habit = habitMap[result.habitId]
+                            if (habit == null) return@filter false
+
+                            val habitCreatedDate = LocalDate.parse(habit.createdDate)
+                            val isSameDay = habitCreatedDate == statDate
+                            val isRepeatDay = habit.repeatDays.contains(statDate.dayOfWeek.value)
+
+                            when {
+                                // 조건 1: 반복 요일 없음 && 생성일 == 통계 날짜
+                                habit.repeatDays.isEmpty() && isSameDay -> true
+
+                                // 조건 2: 반복 요일 포함
+                                isRepeatDay -> true
+
+                                // 조건 3: 생성일 == 통계날짜 && 반복 요일 포함 X
+                                isSameDay && !isRepeatDay -> false
+
+                                // 나머지 → 제외
+                                else -> false
+                            }
+                        }
                         val successCount = entries.count { it.isSuccess }
                         val failureCount = entries.count { !it.isSuccess }
 

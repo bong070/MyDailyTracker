@@ -64,7 +64,10 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
         topBar = {
             MyAppTopBar(
                 title = "통계",
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                    navController.popBackStack()
+                } },
                 backgroundColor = beigeBackground
             )
         },

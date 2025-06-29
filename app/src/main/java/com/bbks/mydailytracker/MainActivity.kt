@@ -1,6 +1,7 @@
 package com.bbks.mydailytracker
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.app.ActivityCompat
@@ -78,7 +79,10 @@ class MainActivity : ComponentActivity() {
                             HabitDetailScreen(
                                 habitId = habitId,
                                 viewModel = viewModel,
-                                onBack = { navController.popBackStack() }
+                                onBack = {
+                                    if (navController.previousBackStackEntry != null) {
+                                    navController.popBackStack()
+                                }}
                             )
                         }
                     }
@@ -86,5 +90,13 @@ class MainActivity : ComponentActivity() {
             }
         }
         ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
+        lifecycleScope.launch {
+            try {
+                db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL)")
+                Log.d("DB", "✅ WAL 병합 완료")
+            } catch (e: Exception) {
+                Log.e("DB", "❌ WAL 병합 실패: ${e.localizedMessage}")
+            }
+        }
     }
 }
