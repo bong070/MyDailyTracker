@@ -17,7 +17,6 @@ class HabitResetLogic(
         val lastResetDate = prefs.getString("last_reset_date", null)
         val today = LocalDate.now().minusDays(1)
         val todayStr = today.toString()
-        val dayOfWeek = today.dayOfWeek.value // 1 (Mon) ~ 7 (Sun)
         val tomorrow = today.plusDays(1)
         val tomorrowStr = tomorrow.toString()
         val tomorrowDayOfWeek = tomorrow.dayOfWeek.value
@@ -45,12 +44,12 @@ class HabitResetLogic(
             // ✅ 1. 성공/실패 기록 저장 (예: HabitDailyResult 테이블로)
             habitRepository.saveDailyResult(habit.id, todayStr, wasChecked, habit.name)
 
-            // ✅ 2. 반복 요일 없는 습관 → 삭제
+            /*// ✅ 2. 반복 요일 없는 습관 → 삭제
             if (habit.repeatDays.isEmpty()) {
                 habitRepository.delete(habit)
                 habitRepository.deleteChecksForHabit(habit.id)
                 continue
-            }
+            }*/
 
             // ✅ 3. 반복 요일 있는 습관 → 내일이 지정 요일이면 자동 체크 생성 또는 초기화
             if (habit.repeatDays.contains(tomorrowDayOfWeek)) {
@@ -64,9 +63,6 @@ class HabitResetLogic(
                     habitRepository.insertHabitCheck(resetCheck)
                 }
             }
-
-            // ✅ 4. 오늘이 지정 요일이 아니더라도, 월/수 등의 케이스로 습관을 유지해야 함 → 삭제하지 않음
-            // 아무것도 안 하면 자동 유지됨
         }
         prefs.edit().putString("last_reset_date", LocalDate.now().toString()).apply()
     }

@@ -10,4 +10,5 @@ object PreferenceKeys {
     val ALARM_ENABLED = booleanPreferencesKey("alarm_enabled")
     val AUTO_DELETE = booleanPreferencesKey("auto_delete")
     val SORT_OPTION = stringPreferencesKey("sort_option")
+    val IS_PREMIUM_USER = androidx.datastore.preferences.core.booleanPreferencesKey("is_premium_user")
 }

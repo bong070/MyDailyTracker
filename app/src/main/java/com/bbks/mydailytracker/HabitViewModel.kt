@@ -48,7 +48,7 @@ class HabitViewModel(
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
         var targetDay = LocalDate.now().dayOfWeek.value
         val filtered = habitList.filter {
-            it.repeatDays.isEmpty() || it.repeatDays.contains(targetDay)
+            LocalDate.parse(it.createdDate) == LocalDate.now() || it.repeatDays.contains(targetDay)
         }
 
         when (sort) {
@@ -219,28 +219,12 @@ class HabitViewModel(
                     .groupBy { it.date } // 날짜별로 묶기
                     .toSortedMap()       // 월~일 순 정렬
                     .map { (date, entries) ->
-                        val statDate = LocalDate.parse(date)
                         val filteredEntries = entries.filter { result ->
-                            val habit = habitMap[result.habitId]
-                            if (habit == null) return@filter false
-
-                            val habitCreatedDate = LocalDate.parse(habit.createdDate)
-                            val isSameDay = habitCreatedDate == statDate
+                            val habit = habitMap[result.habitId] ?: return@filter false
+                            val statDate = LocalDate.parse(result.date)
+                            val created = LocalDate.parse(habit.createdDate)
                             val isRepeatDay = habit.repeatDays.contains(statDate.dayOfWeek.value)
-
-                            when {
-                                // 조건 1: 반복 요일 없음 && 생성일 == 통계 날짜
-                                habit.repeatDays.isEmpty() && isSameDay -> true
-
-                                // 조건 2: 반복 요일 포함
-                                isRepeatDay -> true
-
-                                // 조건 3: 생성일 == 통계날짜 && 반복 요일 포함 X
-                                isSameDay && !isRepeatDay -> false
-
-                                // 나머지 → 제외
-                                else -> false
-                            }
+                            (habit.repeatDays.isEmpty() && created == statDate) || isRepeatDay
                         }
                         val successCount = filteredEntries.count { it.isSuccess }
                         val failureCount = filteredEntries.count { !it.isSuccess }

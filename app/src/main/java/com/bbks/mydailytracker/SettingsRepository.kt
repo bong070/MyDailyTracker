@@ -6,7 +6,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import SortOption
-import java.time.LocalTime
 
 
 private const val DATASTORE_NAME = "user_prefs"
@@ -22,16 +21,6 @@ class SettingsRepository(private val context: Context) {
             autoDelete = prefs[PreferenceKeys.AUTO_DELETE] ?: false,
             sortOption = SortOption.valueOf(prefs[PreferenceKeys.SORT_OPTION] ?: SortOption.ALPHABETICAL.name)
         )
-    }
-
-    suspend fun savePreferences(prefs: UserPreferences) {
-        context.dataStore.edit { settings ->
-            settings[PreferenceKeys.END_HOUR] = prefs.endHour
-            settings[PreferenceKeys.END_MINUTE] = prefs.endMinute
-            settings[PreferenceKeys.ALARM_ENABLED] = prefs.alarmEnabled
-            settings[PreferenceKeys.AUTO_DELETE] = prefs.autoDelete
-            settings[PreferenceKeys.SORT_OPTION] = prefs.sortOption.name
-        }
     }
 
     suspend fun updateAlarmEnabled(enabled: Boolean) {
@@ -52,10 +41,15 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    suspend fun updateEndTime(time: LocalTime) {
+    val premiumUserFlow: Flow<Boolean> = context.dataStore.data
+        .map { prefs ->
+            prefs[PreferenceKeys.IS_PREMIUM_USER] ?: false
+        }
+
+    suspend fun setPremiumUser(isPremium: Boolean) {
         context.dataStore.edit { preferences ->
-            preferences[PreferenceKeys.END_HOUR] = time.hour
-            preferences[PreferenceKeys.END_MINUTE] = time.minute
+            preferences[PreferenceKeys.IS_PREMIUM_USER] = isPremium
         }
     }
+
 }

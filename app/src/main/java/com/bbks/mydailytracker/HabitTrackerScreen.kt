@@ -173,9 +173,9 @@ fun HabitTrackerScreen(
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxHeight()
                     .reorderable(reorderState)
-                    .detectReorderAfterLongPress(reorderState)
                     .navigationBarsPadding()
             ) {
                 itemsIndexed(sortedHabits) { index, habit ->
@@ -194,7 +194,7 @@ fun HabitTrackerScreen(
 
                         Row(
                             modifier = Modifier
-                                .detectReorder(reorderState)
+                                .detectReorderAfterLongPress(reorderState)
                                 .graphicsLayer {
                                     scaleX = scale
                                     scaleY = scale
@@ -303,6 +303,9 @@ fun HabitTrackerScreen(
                             Divider(color = Color(0xFFEADBB6), thickness = 1.dp)
                         }
                     }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(48.dp)) // ✅ 마지막에 여백 추가
                 }
             }
 

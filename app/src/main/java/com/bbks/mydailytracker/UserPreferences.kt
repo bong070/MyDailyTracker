@@ -7,5 +7,5 @@ data class UserPreferences(
     val endMinute: Int = 59,
     val alarmEnabled: Boolean = false,
     val autoDelete: Boolean = false,
-    val sortOption: SortOption = SortOption.ALPHABETICAL
+    val sortOption: SortOption = SortOption.ALPHABETICAL,
 )

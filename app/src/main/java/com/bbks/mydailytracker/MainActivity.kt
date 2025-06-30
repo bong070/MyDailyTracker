@@ -19,6 +19,13 @@ import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.bbks.mydailytracker.reset.ResetAlarmHelper
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 
 class MainActivity : ComponentActivity() {
 
@@ -53,37 +60,43 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyDailyTrackerTheme {
-                val navController = rememberNavController()
+                Column {
+                    // 앱 메인 UI
+                    Box(modifier = Modifier.weight(1f)) {
+                        val navController = rememberNavController()
 
-                NavHost(navController = navController, startDestination = "main") {
-                    composable("main") {
-                        HabitTrackerScreen(
-                            viewModel = viewModel,
-                            onNavigateToStats = { navController.navigate("statistics") },
-                            onNavigateToDetail = { habitId ->
-                                navController.navigate("detail/$habitId")
+                        NavHost(navController = navController, startDestination = "main") {
+                            composable("main") {
+                                HabitTrackerScreen(
+                                    viewModel = viewModel,
+                                    onNavigateToStats = { navController.navigate("statistics") },
+                                    onNavigateToDetail = { habitId ->
+                                        navController.navigate("detail/$habitId")
+                                    }
+                                )
                             }
-                        )
-                    }
 
-                    composable("statistics") {
-                        StatisticsScreen(
-                            navController = navController,
-                            viewModel = viewModel
-                        )
-                    }
+                            composable("statistics") {
+                                StatisticsScreen(
+                                    navController = navController,
+                                    viewModel = viewModel
+                                )
+                            }
 
-                    composable("detail/{habitId}") { backStackEntry ->
-                        val habitId = backStackEntry.arguments?.getString("habitId")?.toIntOrNull()
-                        if (habitId != null) {
-                            HabitDetailScreen(
-                                habitId = habitId,
-                                viewModel = viewModel,
-                                onBack = {
-                                    if (navController.previousBackStackEntry != null) {
-                                    navController.popBackStack()
-                                }}
-                            )
+                            composable("detail/{habitId}") { backStackEntry ->
+                                val habitId = backStackEntry.arguments?.getString("habitId")?.toIntOrNull()
+                                if (habitId != null) {
+                                    HabitDetailScreen(
+                                        habitId = habitId,
+                                        viewModel = viewModel,
+                                        onBack = {
+                                            if (navController.previousBackStackEntry != null) {
+                                                navController.popBackStack()
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
