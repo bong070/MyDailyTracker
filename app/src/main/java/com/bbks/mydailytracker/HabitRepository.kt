@@ -1,11 +1,9 @@
 package com.bbks.mydailytracker
 
-import com.bbks.mydailytracker.Habit
-import com.bbks.mydailytracker.HabitCheck
-import com.bbks.mydailytracker.HabitCheckDao
-import com.bbks.mydailytracker.HabitDao
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 class HabitRepository(
     private val habitDao: HabitDao,
@@ -44,5 +42,11 @@ class HabitRepository(
     fun getWeeklyStats(): Flow<List<DailyHabitResult>> {
         val startDate = LocalDate.now().minusDays(6).toString() // 최근 7일 포함
         return resultDao.getResultsFrom(startDate)
+    }
+
+    fun getMonthlyStats(yearMonth: YearMonth): Flow<List<DailyHabitResult>> {
+        val startDate = yearMonth.atDay(1)
+        val endDate = yearMonth.atEndOfMonth()
+        return resultDao.getResultsBetween(startDate.toString(), endDate.toString())
     }
 }

@@ -22,4 +22,7 @@ interface DailyHabitResultDao {
 
     @Query("SELECT * FROM daily_habit_results WHERE date >= :startDate ORDER BY date ASC")
     fun getResultsFrom(startDate: String): Flow<List<DailyHabitResult>>
+
+    @Query("SELECT * FROM daily_habit_results WHERE date BETWEEN :start AND :end")
+    fun getResultsBetween(start: String, end: String): Flow<List<DailyHabitResult>>
 }

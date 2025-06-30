@@ -1,11 +1,9 @@
 package com.bbks.mydailytracker
 
 import SortOption
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bbks.mydailytracker.data.SettingsRepository
-import com.bbks.mydailytracker.data.UserPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -15,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import com.bbks.mydailytracker.model.DayStats
+import java.time.YearMonth
 
 class HabitViewModel(
     private val habitDao: HabitDao,
@@ -40,6 +39,9 @@ class HabitViewModel(
 
     private val _autoDelete = MutableStateFlow(false)
     val autoDelete: StateFlow<Boolean> = _autoDelete
+
+    private val _currentMonth = MutableStateFlow(YearMonth.now())
+    val currentMonth: StateFlow<YearMonth> = _currentMonth
 
     private val today: String = LocalDate.now().toString()
 
@@ -133,17 +135,6 @@ class HabitViewModel(
         }
     }
 
-    fun isHabitChecked(habitId: Int): Boolean =
-        _habitChecks.value.containsKey(habitId)
-
-    fun setEndTime(context: Context, newTime: LocalTime) {
-        _endTime.value = newTime
-        viewModelScope.launch {
-            settingsRepository.updateEndTime(newTime)
-            HabitResetScheduler.scheduleDailyReset(context, newTime)
-        }
-    }
-
     fun setSortOption(option: SortOption) {
         _sortOption.value = option
         viewModelScope.launch {
@@ -165,22 +156,8 @@ class HabitViewModel(
         }
     }
 
-    fun saveSettings(
-        endTime: LocalTime,
-        alarmEnabled: Boolean,
-        autoDelete: Boolean,
-        sortOption: SortOption
-    ) {
-        viewModelScope.launch {
-            val prefs = UserPreferences(
-                endHour = endTime.hour,
-                endMinute = endTime.minute,
-                alarmEnabled = alarmEnabled,
-                autoDelete = autoDelete,
-                sortOption = sortOption
-            )
-            settingsRepository.savePreferences(prefs)
-        }
+    fun setCurrentMonth(month: YearMonth) {
+        _currentMonth.value = month
     }
 
     fun updateHabit(updatedHabit: Habit) {
@@ -265,12 +242,12 @@ class HabitViewModel(
                                 else -> false
                             }
                         }
-                        val successCount = entries.count { it.isSuccess }
-                        val failureCount = entries.count { !it.isSuccess }
+                        val successCount = filteredEntries.count { it.isSuccess }
+                        val failureCount = filteredEntries.count { !it.isSuccess }
 
-                        val failedHabits = entries.filter { !it.isSuccess }.map { it.habitName }
+                        val failedHabits = filteredEntries.filter { !it.isSuccess }.map { it.habitName }
 
-                        val successHabits = entries.filter { it.isSuccess }.map { it.habitName }
+                        val successHabits = filteredEntries.filter { it.isSuccess }.map { it.habitName }
                         val label = LocalDate.parse(date).dayOfWeek
                             .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault())
                             .take(1) // "M", "T", ...
@@ -291,4 +268,16 @@ class HabitViewModel(
                 emptyList()
             )
     }
+
+
+    val monthlyStats: StateFlow<List<DailyHabitResult>> =
+        currentMonth
+            .flatMapLatest { month ->
+                habitRepository.getMonthlyStats(month)
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
 }
