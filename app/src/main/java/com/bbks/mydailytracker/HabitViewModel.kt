@@ -48,7 +48,11 @@ class HabitViewModel(
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
         var targetDay = LocalDate.now().dayOfWeek.value
         val filtered = habitList.filter {
-            LocalDate.parse(it.createdDate) == LocalDate.now() || it.repeatDays.contains(targetDay)
+            if (it.repeatDays.isEmpty()) {
+                LocalDate.parse(it.createdDate) == LocalDate.now()
+            } else {
+                it.repeatDays.contains(targetDay)
+            }
         }
 
         when (sort) {
