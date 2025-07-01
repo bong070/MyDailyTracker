@@ -8,4 +8,5 @@ data class UserPreferences(
     val alarmEnabled: Boolean = false,
     val autoDelete: Boolean = false,
     val sortOption: SortOption = SortOption.ALPHABETICAL,
+    val isPremiumUser: Boolean = false
 )

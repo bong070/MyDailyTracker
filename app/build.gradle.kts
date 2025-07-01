@@ -13,8 +13,8 @@ android {
         applicationId = "com.bbks.mydailytracker"
         minSdk = 24
         targetSdk = 35
-        versionCode = 11
-        versionName = "0.3.7"
+        versionCode = 13
+        versionName = "0.3.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -75,6 +75,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.1")
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
+    implementation("com.android.billingclient:billing-ktx:6.2.1")
     kapt(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

@@ -1,73 +1,93 @@
 package com.bbks.mydailytracker
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun LockedContentScreen(
-    title: String = "프리미엄 기능입니다.",
-    description: String = "이 기능을 사용하려면 프리미엄으로 업그레이드해주세요.",
-    onUpgradeClick: () -> Unit
+    onUpgradeClick: () -> Unit,
+    onBack: () -> Unit
 ) {
+    val backgroundColor = Color(0xFFFFF8E1)
+    val cardColor = Color(0xFFF7EBD5)
+    val lockIconColor = Color(0xFFFF7043)
+    val textColor = Color(0xFF212121)
+    val buttonColor = Color(0xFFFF7043)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF8E1)),
-        contentAlignment = Alignment.Center
+            .background(backgroundColor)
+            .padding(24.dp)
     ) {
-        Card(
+        Column(
             modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3C0)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+                .background(cardColor)
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Text(
+                text = "프리미엄 기능입니다",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = textColor,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "해당 기능은 프리미엄 사용자만 사용할 수 있어요.",
+                style = MaterialTheme.typography.bodyMedium.copy(color = textColor),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "Lock Icon",
+                modifier = Modifier.size(72.dp),
+                tint = lockIconColor
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Button(
+                onClick = onUpgradeClick,
+                colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+                shape = RoundedCornerShape(20.dp)
             ) {
-                // 아이콘 이미지가 있다면 여기에 추가 가능
-                // Image(painter = painterResource(id = R.drawable.ic_lock), contentDescription = null)
-
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = description,
-                    fontSize = 14.sp,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Button(onClick = onUpgradeClick) {
-                    Text("프리미엄으로 업그레이드")
-                }
+                Text("업그레이드", color = Color.White, fontWeight = FontWeight.SemiBold)
             }
+        }
+
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        ) {
+            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor)
         }
     }
 }
+

@@ -19,7 +19,8 @@ class SettingsRepository(private val context: Context) {
             endMinute = prefs[PreferenceKeys.END_MINUTE] ?: 59,
             alarmEnabled = prefs[PreferenceKeys.ALARM_ENABLED] ?: false,
             autoDelete = prefs[PreferenceKeys.AUTO_DELETE] ?: false,
-            sortOption = SortOption.valueOf(prefs[PreferenceKeys.SORT_OPTION] ?: SortOption.ALPHABETICAL.name)
+            sortOption = SortOption.valueOf(prefs[PreferenceKeys.SORT_OPTION] ?: SortOption.ALPHABETICAL.name),
+            isPremiumUser = prefs[PreferenceKeys.IS_PREMIUM_USER] ?: false
         )
     }
 
@@ -42,8 +43,8 @@ class SettingsRepository(private val context: Context) {
     }
 
     val premiumUserFlow: Flow<Boolean> = context.dataStore.data
-        .map { prefs ->
-            prefs[PreferenceKeys.IS_PREMIUM_USER] ?: false
+        .map { preferences ->
+            preferences[PreferenceKeys.IS_PREMIUM_USER] ?: false
         }
 
     suspend fun setPremiumUser(isPremium: Boolean) {
@@ -51,5 +52,4 @@ class SettingsRepository(private val context: Context) {
             preferences[PreferenceKeys.IS_PREMIUM_USER] = isPremium
         }
     }
-
 }

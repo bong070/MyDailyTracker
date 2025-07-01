@@ -20,16 +20,15 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.bbks.mydailytracker.reset.ResetAlarmHelper
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: HabitViewModel
+    private lateinit var billingLauncher: BillingLauncher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,11 +59,31 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyDailyTrackerTheme {
-                Column {
-                    // 앱 메인 UI
-                    Box(modifier = Modifier.weight(1f)) {
-                        val navController = rememberNavController()
+                val navController = rememberNavController()
+                val isPremiumUser by viewModel.isPremiumUser.collectAsState()
 
+                billingLauncher = BillingLauncher(
+                    activity = this,
+                    lifecycleScope = lifecycleScope,
+                    onPurchaseComplete = {
+                        navController.popBackStack()
+                    },
+                    onPurchaseCancelled = {
+                        navController.popBackStack()
+                    },
+                    setPremiumUser = { isPremium ->
+                        viewModel.setPremiumUser(isPremium)
+                    },
+                    refreshPreferences = {
+                        viewModel.refreshPreferences()
+                    }
+                )
+
+                billingLauncher.setup()
+                billingLauncher.restorePurchase()
+
+                Column {
+                    Box(modifier = Modifier.weight(1f)) {
                         NavHost(navController = navController, startDestination = "main") {
                             composable("main") {
                                 HabitTrackerScreen(
@@ -77,31 +96,61 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("statistics") {
-                                StatisticsScreen(
-                                    navController = navController,
-                                    viewModel = viewModel
-                                )
+                                if (isPremiumUser) {
+                                    StatisticsScreen(
+                                        navController = navController,
+                                        viewModel = viewModel
+                                    )
+                                } else {
+                                    LaunchedEffect(Unit) {
+                                        navController.navigate("locked") {
+                                            popUpTo("statistics") { inclusive = true }
+                                        }
+                                    }
+                                }
                             }
 
                             composable("detail/{habitId}") { backStackEntry ->
                                 val habitId = backStackEntry.arguments?.getString("habitId")?.toIntOrNull()
                                 if (habitId != null) {
-                                    HabitDetailScreen(
-                                        habitId = habitId,
-                                        viewModel = viewModel,
-                                        onBack = {
-                                            if (navController.previousBackStackEntry != null) {
-                                                navController.popBackStack()
+                                    if (isPremiumUser) {
+                                        HabitDetailScreen(
+                                            habitId = habitId,
+                                            viewModel = viewModel,
+                                            onBack = {
+                                                if (navController.previousBackStackEntry != null) {
+                                                    navController.popBackStack()
+                                                }
+                                            }
+                                        )
+                                    } else {
+                                        LaunchedEffect(Unit) {
+                                            navController.navigate("locked") {
+                                                popUpTo("detail/{habitId}") { inclusive = true }
                                             }
                                         }
-                                    )
+                                    }
                                 }
+                            }
+
+                            composable("locked") {
+                                LockedContentScreen(
+                                    onUpgradeClick = {
+                                        billingLauncher.launchPurchase("premium_upgrade")
+                                    },
+                                    onBack = {
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
                 }
             }
         }
+
         ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
         lifecycleScope.launch {
             try {
@@ -110,6 +159,10 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 Log.e("DB", "❌ WAL 병합 실패: ${e.localizedMessage}")
             }
+        }
+
+        lifecycleScope.launch {
+            viewModel.setPremiumUser(true) // 앱 실행 시 프리미엄 강제 설정
         }
     }
 }

@@ -45,6 +45,9 @@ class HabitViewModel(
 
     private val today: String = LocalDate.now().toString()
 
+    private val _isPremiumUser = MutableStateFlow(false)
+    val isPremiumUser: StateFlow<Boolean> = _isPremiumUser
+
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
         var targetDay = LocalDate.now().dayOfWeek.value
         val filtered = habitList.filter {
@@ -94,6 +97,7 @@ class HabitViewModel(
                 _alarmEnabled.value = prefs.alarmEnabled
                 _autoDelete.value = prefs.autoDelete
                 _sortOption.value = prefs.sortOption
+                _isPremiumUser.value = prefs.isPremiumUser
             }
         }
     }
@@ -268,4 +272,18 @@ class HabitViewModel(
                 SharingStarted.WhileSubscribed(5000),
                 emptyList()
             )
+
+    fun setPremiumUser(isPremium: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setPremiumUser(isPremium)
+        }
+    }
+
+    fun refreshPreferences() {
+        viewModelScope.launch {
+            settingsRepository.userPreferencesFlow.first().let { prefs ->
+                _isPremiumUser.value = prefs.isPremiumUser
+            }
+        }
+    }
 }
