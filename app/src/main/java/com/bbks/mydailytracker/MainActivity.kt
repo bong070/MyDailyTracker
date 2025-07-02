@@ -82,6 +82,10 @@ class MainActivity : ComponentActivity() {
                 billingLauncher.setup()
                 billingLauncher.restorePurchase()
 
+                LaunchedEffect(Unit) { //테스트용
+                    viewModel.overridePremiumUserForDebug(true)
+                }
+
                 Column {
                     Box(modifier = Modifier.weight(1f)) {
                         NavHost(navController = navController, startDestination = "main") {
@@ -159,10 +163,6 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 Log.e("DB", "❌ WAL 병합 실패: ${e.localizedMessage}")
             }
-        }
-
-        lifecycleScope.launch {
-            viewModel.setPremiumUser(true) // 앱 실행 시 프리미엄 강제 설정
         }
     }
 }

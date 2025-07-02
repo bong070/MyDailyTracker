@@ -39,7 +39,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.Font
@@ -103,12 +105,12 @@ fun HabitDetailScreen(
     var noteText by remember { mutableStateOf(habit.note ?: "") }
 
     Scaffold(
-        containerColor = statusBarColor,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             MyAppTopBar(
                 title = habit.name,
                 onBack = onBack,
-                backgroundColor = beigeBackground
+                backgroundColor = MaterialTheme.colorScheme.background
             )
         },
         bottomBar = {
@@ -165,7 +167,7 @@ fun HabitDetailScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium)
+            Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -196,47 +198,47 @@ fun HabitDetailScreen(
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("현재 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
-            Text(currentDaysText.ifEmpty { "선택된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall)
+            Text("현재 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+            Text(currentDaysText.ifEmpty { "선택된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
 
             Spacer(Modifier.height(8.dp))
-            Text("저장된 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium)
-            Text(savedDaysText.ifEmpty { "저장된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall)
+            Text("저장된 반복 요일 설정:", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+            Text(savedDaysText.ifEmpty { "저장된 반복 요일 설정 없음" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
 
             Spacer(Modifier.height(20.dp))
-            Text("⏰ 알람 시간", style = MaterialTheme.typography.titleMedium)
+            Text("⏰ 알람 시간", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(currentTimeText)
+                Text(currentTimeText, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(Modifier.width(12.dp))
                 Button(onClick = {
                     showLocalTimePickerDialog(context, timePickerState.value) { timePickerState.value = it }
                 }) {
-                    Text("시간 선택")
+                    Text("시간 선택", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("현재 알람 설정:", style = MaterialTheme.typography.bodyMedium)
+            Text("현재 알람 설정:", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
             if (habit.alarmEnabled) {
-                Text(currentDaysText, style = MaterialTheme.typography.bodySmall)
-                currentTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                Text(currentDaysText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
+                currentTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground) }
             } else {
-                Text("현재 알람 없음", style = MaterialTheme.typography.bodySmall)
+                Text("현재 알람 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("저장된 알람 설정:", style = MaterialTheme.typography.bodyMedium)
+            Text("저장된 알람 설정:", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
             if (habit.alarmEnabled) {
-                Text(savedDaysText, style = MaterialTheme.typography.bodySmall)
-                savedTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                Text(savedDaysText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
+                savedTimeText?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground) }
             } else {
-                Text("저장된 알람 없음", style = MaterialTheme.typography.bodySmall)
+                Text("저장된 알람 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
             }
 
             Spacer(Modifier.height(20.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("알람 사용", style = MaterialTheme.typography.bodyMedium)
+                Text("알람 사용", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = alarmEnabled.value, onCheckedChange = {
                     if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -252,7 +254,7 @@ fun HabitDetailScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("📝 메모", style = MaterialTheme.typography.titleMedium)
+            Text("📝 메모", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.height(8.dp))
 
             LinedNoteField(
@@ -439,27 +441,34 @@ fun LinedNoteField(
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     val lineHeight = 24.dp
-    val lineColor = Color(0xFFBDBDBD)
-    val noteFont = FontFamily(
-        Font(R.font.nanum_pen_script)
-    )
+    val visibleLines = 3
+    val noteFont = FontFamily(Font(R.font.nanum_pen_script))
+
+    // 🎨 색상 다크/라이트 대응
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val lineColor = if (isDark) Color(0xFF555555) else Color(0xFFBDBDBD)
+    val textColor = if (isDark) Color(0xFFE0E0E0) else Color(0xFF4E4E4E)
+    val cursorColor = if (isDark) Color.LightGray else Color.DarkGray
+
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .background(Color(0xFFFFF8E1))
+            .height(lineHeight * visibleLines)
+            .background(backgroundColor)
     ) {
         // 밑줄 배경
         Canvas(modifier = Modifier.matchParentSize()) {
-            val totalLines = size.height / lineHeight.toPx()
-            repeat(totalLines.toInt()) { i ->
-                val y = lineHeight.toPx() * (i + 1)
+            val paddingTopPx = 8.dp.toPx() // BasicTextField의 top padding
+            val totalLines = 4
+            repeat(totalLines) { i ->
+                val y = paddingTopPx + lineHeight.toPx() * i
                 drawLine(
                     color = lineColor,
-                    start = androidx.compose.ui.geometry.Offset(0f, y + 6f),
-                    end = androidx.compose.ui.geometry.Offset(size.width, y + 6f),
+                    start = Offset(0f, y),
+                    end = Offset(size.width, y),
                     strokeWidth = 1f
                 )
             }
@@ -467,7 +476,16 @@ fun LinedNoteField(
 
         BasicTextField(
             value = text,
-            onValueChange = onTextChange,
+            onValueChange = {
+                val lines = it.lines()
+                if (lines.size <= visibleLines) {
+                    onTextChange(it)
+                } else {
+                    // ✅ 5줄까지만 유지
+                    val trimmed = lines.take(visibleLines).joinToString("\n")
+                    onTextChange(trimmed)
+                }
+            },
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxSize(),
@@ -475,10 +493,10 @@ fun LinedNoteField(
                 fontSize = 16.sp,
                 fontFamily = noteFont,
                 lineHeight = 24.sp,
-                color = Color(0xFF4E4E4E)
+                color = textColor
             ),
-            cursorBrush = SolidColor(Color.DarkGray),
-            maxLines = Int.MAX_VALUE
+            cursorBrush = SolidColor(cursorColor),
+            maxLines = visibleLines
         )
     }
 }

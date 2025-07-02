@@ -18,7 +18,7 @@ fun MyAppTopBar(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    titleColor: Color = Color.Black,
+    titleColor: Color = MaterialTheme.colorScheme.onBackground
 ) {
     TopAppBar(
         title = {

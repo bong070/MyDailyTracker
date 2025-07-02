@@ -3,6 +3,7 @@ package com.bbks.mydailytracker.ui.statistics
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,12 +43,19 @@ import androidx.compose.material.icons.filled.ArrowForward
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
+    val isDark = isSystemInDarkTheme()
+
+    val beigeBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFFFF8E1)
+    val toggleBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFFFF3C0)
+    val selectedTabColor = if (isDark) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFFE082)
+    val emphasizedCardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFFFF3C0)
+    val successCardColor = if (isDark) MaterialTheme.colorScheme.tertiaryContainer else Color(0xFFA5D6A7)
+    val failureCardColor = if (isDark) MaterialTheme.colorScheme.errorContainer else Color(0xFFF28B82)
+    val defaultTextColor = if (isDark) MaterialTheme.colorScheme.onBackground else Color.Black
+    val dimTextColor = if (isDark) MaterialTheme.colorScheme.onBackground else Color.DarkGray
+
     val tabTitles = listOf("주간 통계", "월간 통계")
     var selectedTab by remember { mutableStateOf(0) }
-    val beigeBackground = Color(0xFFFFF8E1)
-    val toggleBackground = Color(0xFFFFF3C0)
-    val selectedTabColor = Color(0xFFFFE082)
-    val unselectedTextColor = Color.DarkGray
 
     Scaffold(
         topBar = {
@@ -57,19 +65,16 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
                     if (navController.previousBackStackEntry != null) {
                         navController.popBackStack()
                     }
-                },
-                backgroundColor = beigeBackground
+                }
             )
         },
-        containerColor = beigeBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(beigeBackground)
                 .padding(innerPadding)
         ) {
-            // 🔘 토글 버튼 스타일 Tab
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,7 +102,7 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
                     ) {
                         Text(
                             text = title,
-                            color = if (isSelected) Color.Black else unselectedTextColor,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else dimTextColor,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             fontSize = 15.sp
                         )
@@ -105,7 +110,6 @@ fun StatisticsScreen(navController: NavController, viewModel: HabitViewModel) {
                 }
             }
 
-            // 🔁 선택된 탭 내용 렌더링
             when (selectedTab) {
                 0 -> WeeklyStatsScreen(viewModel = viewModel)
                 1 -> MonthlyStatsScreen(viewModel = viewModel)
@@ -143,7 +147,7 @@ fun LegendIndicator(color: Color, label: String) {
         Spacer(Modifier.width(4.dp))
         Text(
             text = label,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -159,11 +163,17 @@ fun BarChart(
     val barWidth = 14.dp
     val gap = 4.dp
     val maxBarHeight = 160.dp
-    val gridLineColor = Color.Gray.copy(alpha = 0.2f)
-    val emphasizedCardBackground = Color(0xFFFFF3C0)
+    val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+    val emphasizedCardBackground = if (isSystemInDarkTheme()) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth().height(maxBarHeight + 40.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(maxBarHeight + 40.dp),
         shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
         colors = CardDefaults.cardColors(containerColor = emphasizedCardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -191,11 +201,7 @@ fun BarChart(
                     )
                 }
 
-                val maxTotal = if (stats.isNotEmpty()) {
-                    stats.maxOf { it.success + it.failure }.coerceAtLeast(1)
-                } else {
-                    1 // 기본값
-                }
+                val maxTotal = stats.maxOfOrNull { it.success + it.failure }?.coerceAtLeast(1) ?: 1
 
                 stats.forEachIndexed { index, day ->
                     val total = day.success + day.failure
@@ -225,7 +231,9 @@ fun BarChart(
             }
 
             Row(
-                modifier = Modifier.fillMaxSize().padding(bottom = 4.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -233,8 +241,10 @@ fun BarChart(
                     Text(
                         text = day.label,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Black,
-                        modifier = Modifier.clickable { onDaySelected(index) }.padding(top = maxBarHeight)
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .clickable { onDaySelected(index) }
+                            .padding(top = maxBarHeight)
                     )
                 }
             }
@@ -264,8 +274,12 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
         today.with(DayOfWeek.MONDAY).plusDays(7)
     )
 
-    val beigeBackground = Color(0xFFFFF8E1)
-    val emphasizedCardBackground = Color(0xFFFFF3C0)
+    val beigeBackground = MaterialTheme.colorScheme.background
+    val emphasizedCardBackground = if (isSystemInDarkTheme()) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
     var showSuccessList by remember { mutableStateOf(false) }
     var showFailureList by remember { mutableStateOf(false) }
 
@@ -283,7 +297,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
             Text(
                 text = "📊 총 성공: $totalSuccess / 실패: $totalFailure",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp, bottom = 8.dp),
@@ -294,7 +308,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 주간 통계 제목 + 범위 + 레전드
+            // 주간 통계 카드
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
@@ -305,7 +319,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                     Text(
                         text = "주간 통계",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -322,12 +336,12 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                             modifier = Modifier
                                 .clickable { currentStartOfWeek = currentStartOfWeek.minusWeeks(1) }
                                 .padding(horizontal = 12.dp),
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text(
                             text = dateRangeText,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text(
                             text = ">",
@@ -339,9 +353,9 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                                     }
                                 },
                             color = if (isRightArrowEnabled)
-                                Color.Black
+                                MaterialTheme.colorScheme.onBackground
                             else
-                                Color.Black.copy(alpha = 0.1f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
                     }
 
@@ -375,7 +389,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                 Text(
                     text = "✅ ${it.label} - 성공: ${it.success}, 실패: ${it.failure}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
@@ -387,7 +401,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 성공한 습관 리스트 카드
+            // ✅ 성공 카드
             Card(
                 onClick = { showSuccessList = !showSuccessList },
                 modifier = Modifier.fillMaxWidth(),
@@ -402,28 +416,28 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Black)
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = selectedStats?.label?.let { "성공한 목표 - $it" } ?: "성공한 목표",
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
                             imageVector = if (showSuccessList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = null,
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     if (showSuccessList) {
-                        Divider(color = Color.Gray.copy(alpha = 0.3f))
+                        Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         val successHabits = selectedStats?.successHabits.orEmpty()
                         if (successHabits.isEmpty()) {
                             Text(
                                 "성공한 목표가 없습니다.",
-                                color = Color.Black,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(16.dp)
                             )
@@ -433,10 +447,10 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                                     Text(
                                         text = habit,
                                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                                        color = Color.Black
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                     if (index != successHabits.lastIndex)
-                                        Divider(color = Color.Gray.copy(alpha = 0.2f))
+                                        Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                                 }
                             }
                         }
@@ -446,7 +460,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 실패한 습관 리스트 카드
+            // ✅ 실패 카드
             Card(
                 onClick = { showFailureList = !showFailureList },
                 modifier = Modifier.fillMaxWidth(),
@@ -461,28 +475,28 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Cancel, contentDescription = null, tint = Color.Black)
+                        Icon(Icons.Default.Cancel, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = selectedStats?.label?.let { "실패한 목표 - $it" } ?: "실패한 목표",
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
                             imageVector = if (showFailureList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = null,
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     if (showFailureList) {
-                        Divider(color = Color.Gray.copy(alpha = 0.3f))
+                        Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         val failedHabits = selectedStats?.failedHabits.orEmpty()
                         if (failedHabits.isEmpty()) {
                             Text(
                                 "실패한 목표가 없습니다. 🎉",
-                                color = Color.Black,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(16.dp)
                             )
@@ -492,10 +506,10 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
                                     Text(
                                         text = habit,
                                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                                        color = Color.Black
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
                                     if (index != failedHabits.lastIndex)
-                                        Divider(color = Color.Gray.copy(alpha = 0.2f))
+                                        Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                                 }
                             }
                         }
@@ -514,20 +528,22 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
     val habits by viewModel.habits.collectAsState()
     val habitMap = habits.associateBy { it.id }
 
+    val isDark = isSystemInDarkTheme()
+    val beigeBackground = MaterialTheme.colorScheme.background
+    val cellBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFFFF3C0)
+    val textColor = if (isDark) MaterialTheme.colorScheme.onBackground else Color.Black
+
     val firstDayOfMonth = currentMonth.atDay(1)
     val lastDayOfMonth = currentMonth.atEndOfMonth()
     val startDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7 // 일요일 = 0
 
     val daysInMonth = lastDayOfMonth.dayOfMonth
     val totalGridCount = startDayOfWeek + daysInMonth
-    val weeks = (totalGridCount + 6) / 7 // 올림 나눗셈
+    val weeks = (totalGridCount + 6) / 7
 
-    val beigeBackground = Color(0xFFFFF8E1)
-    val cellBackground = Color(0xFFFFF3C0)
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
-    // 날짜별 성공/실패 집계
-    val statsByDate: Map<LocalDate, Pair<List<String>, List<String>>> = remember(monthlyStats, habits) {
+    val statsByDate = remember(monthlyStats, habits) {
         monthlyStats
             .groupBy { LocalDate.parse(it.date) }
             .mapValues { (parsedDate, entries) ->
@@ -557,12 +573,13 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { viewModel.setCurrentMonth(currentMonth.minusMonths(1)) }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "이전 달")
+                Icon(Icons.Default.ArrowBack, contentDescription = "이전 달", tint = textColor)
             }
             Text(
                 text = "${currentMonth.year}년 ${currentMonth.monthValue}월",
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                color = textColor
             )
             IconButton(
                 onClick = {
@@ -574,9 +591,7 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                 Icon(
                     Icons.Default.ArrowForward,
                     contentDescription = "다음 달",
-                    tint = if (currentMonth.isBefore(YearMonth.now())) Color.Black else Color.Gray.copy(
-                        alpha = 0.2f
-                    )
+                    tint = if (currentMonth.isBefore(YearMonth.now())) textColor else Color.Gray.copy(alpha = 0.2f)
                 )
             }
         }
@@ -591,7 +606,8 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                     text = it,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor
                 )
             }
         }
@@ -606,15 +622,10 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                         val cellIndex = weekIndex * 7 + dayIndex
                         val dayNumber = cellIndex - startDayOfWeek + 1
 
-                        val date =
-                            if (dayNumber in 1..daysInMonth) currentMonth.atDay(dayNumber) else null
-                        val (successList, failureList) = statsByDate[date] ?: Pair(
-                            emptyList(),
-                            emptyList()
-                        )
+                        val date = if (dayNumber in 1..daysInMonth) currentMonth.atDay(dayNumber) else null
+                        val (successList, failureList) = statsByDate[date] ?: Pair(emptyList(), emptyList())
                         val totalCount = successList.size + failureList.size
-                        val rate =
-                            if (totalCount > 0) (successList.size * 100) / totalCount else null
+                        val rate = if (totalCount > 0) (successList.size * 100) / totalCount else null
 
                         Box(
                             modifier = Modifier
@@ -625,7 +636,7 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                                 .background(
                                     when {
                                         date == null -> Color.Transparent
-                                        selectedDate == date -> Color(0xFF4CAF50) // 선택 시
+                                        selectedDate == date -> Color(0xFF4CAF50)
                                         else -> getColorForSuccessRate(rate)
                                     }
                                 )
@@ -638,7 +649,7 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                                 Text(
                                     text = "$dayNumber",
                                     fontWeight = FontWeight.Medium,
-                                    color = if (selectedDate == date) Color.White else Color.Black
+                                    color = if (selectedDate == date) Color.White else textColor
                                 )
                             }
                         }
@@ -668,14 +679,15 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                             successRate?.let { append(" (${it}%)") }
                         },
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = textColor
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (successHabits.isEmpty()) {
-                        Text("성공한 목표가 없습니다.", color = Color.Black)
+                        Text("성공한 목표가 없습니다.", color = textColor)
                     } else {
                         successHabits.forEach { habit ->
-                            Text("• $habit", color = Color.Black)
+                            Text("• $habit", color = textColor)
                         }
                     }
                 }
@@ -694,14 +706,15 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                     Text(
                         text = "❌ ${date.monthValue}월 ${date.dayOfMonth}일 실패한 목표",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = textColor
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (failureHabits.isEmpty()) {
-                        Text("실패한 목표가 없습니다. 🎉", color = Color.Black)
+                        Text("실패한 목표가 없습니다. 🎉", color = textColor)
                     } else {
                         failureHabits.forEach { habit ->
-                            Text("• $habit", color = Color.Black)
+                            Text("• $habit", color = textColor)
                         }
                     }
                 }

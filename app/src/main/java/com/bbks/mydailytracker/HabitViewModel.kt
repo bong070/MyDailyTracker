@@ -135,7 +135,10 @@ class HabitViewModel(
             if (existing == null) {
                 val newCheck = HabitCheck(habit.id, today, true)
                 habitCheckDao.insertHabitCheck(newCheck)
-                _habitChecks.update { it + (habit.id to newCheck) }
+                val refreshed = habitCheckDao.getHabitCheck(habit.id, today)
+                if (refreshed != null) {
+                    _habitChecks.update { it + (habit.id to refreshed) }
+                }
             } else {
                 habitCheckDao.deleteChecksForHabit(habit.id)
                 _habitChecks.update { it - habit.id }
@@ -285,5 +288,9 @@ class HabitViewModel(
                 _isPremiumUser.value = prefs.isPremiumUser
             }
         }
+    }
+
+    fun overridePremiumUserForDebug(value: Boolean) { //테스트용
+        _isPremiumUser.value = value // 그냥 메모리에서만 세팅
     }
 }

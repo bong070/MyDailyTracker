@@ -86,7 +86,7 @@ fun HabitTrackerScreen(
     var showDeleteDialog by remember { mutableStateOf<Habit?>(null) }
 
     Scaffold(
-        containerColor = Color(0xFFF7EBD5),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopBarWithCountdownAndSettings(
                 endTime = endTime,
@@ -103,7 +103,7 @@ fun HabitTrackerScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .padding(16.dp)
-                .background(Color(0xFFFDF5E6), shape = RoundedCornerShape(24.dp))
+                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(24.dp))
                 .padding(16.dp)
                 .navigationBarsPadding()
         ) {
@@ -117,17 +117,23 @@ fun HabitTrackerScreen(
                 OutlinedTextField(
                     value = newHabitName,
                     onValueChange = { newHabitName = it },
-                    placeholder = { Text("새로운 목표 아이템", modifier = Modifier.padding(start = 4.dp)) },
+                    placeholder = {
+                        Text(
+                            "새로운 목표 아이템",
+                            modifier = Modifier.padding(start = 4.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedPlaceholderColor = Color.Gray,
-                        unfocusedPlaceholderColor = Color.Gray,
-                        cursorColor = Color.Black,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        cursorColor = MaterialTheme.colorScheme.primary,
                         focusedIndicatorColor = Color(0xFFBDBDBD),
                         unfocusedIndicatorColor = Color(0xFFBDBDBD),
-                        focusedContainerColor = Color(0xFFFFF8E1),
-                        unfocusedContainerColor = Color(0xFFFFF8E1)
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f)
@@ -143,8 +149,8 @@ fun HabitTrackerScreen(
                     },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF8BC34A),
-                        contentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Text("추가")
@@ -155,7 +161,7 @@ fun HabitTrackerScreen(
             Text(
                 text = "🏆 오늘 완료: $completedCount / ${sortedHabits.size}",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Color(0xFF212121),
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
             )
             LinearProgressIndicator(
@@ -163,11 +169,11 @@ fun HabitTrackerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                color = Color(0xFF8BC34A),
-                trackColor = Color(0xFFE0E0E0)
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
-            Divider(color = Color(0xFFEADBB6), thickness = 1.dp)
+            Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
             // 습관 리스트
             LazyColumn(
@@ -246,7 +252,7 @@ fun HabitTrackerScreen(
                                 text = habit.name,
                                 modifier = Modifier.weight(1f).alpha(if (isChecked) 0.5f else 1f),
                                 textDecoration = if (isChecked) TextDecoration.LineThrough else null,
-                                color = Color.Black,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontWeight = FontWeight.Medium
                             )
 
@@ -254,7 +260,8 @@ fun HabitTrackerScreen(
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "삭제",
-                                    tint = Color.Black
+                                    tint = Color(0xFF757575), // 회색
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
