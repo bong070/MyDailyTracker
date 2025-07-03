@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
@@ -119,13 +120,13 @@ fun HabitTrackerScreen(
                     onValueChange = { newHabitName = it },
                     placeholder = {
                         Text(
-                            "새로운 목표 아이템",
+                            text = stringResource(R.string.new_habit_item),
                             modifier = Modifier.padding(start = 4.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -153,15 +154,15 @@ fun HabitTrackerScreen(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("추가")
+                    Text(stringResource(R.string.add))
                 }
             }
 
             // 완료 수 & 진행 바
             Text(
-                text = "🏆 오늘 완료: $completedCount / ${sortedHabits.size}",
+                text = stringResource(R.string.today_completed, completedCount, sortedHabits.size),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
             )
             LinearProgressIndicator(
@@ -270,21 +271,29 @@ fun HabitTrackerScreen(
                         if (showDeleteDialog != null) {
                             AlertDialog(
                                 onDismissRequest = { showDeleteDialog = null },
-                                title = { Text("삭제 확인") },
+                                title = { Text(stringResource(R.string.confirm_delete))  },
                                 text = {
                                     // 흔들림 방지를 위해 Box로 높이 고정
-                                    Box(Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp)
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .height(56.dp)
                                     ) {
+                                        val habitName = showDeleteDialog?.name.orEmpty()
+                                        val message = stringResource(R.string.confirm_delete_message, habitName)
+
+                                        val annotated = buildAnnotatedString {
+                                            val parts = message.split(habitName)
+
+                                            append(parts.first())
+                                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                                append(habitName)
+                                            }
+                                            append(parts.getOrNull(1).orEmpty())
+                                        }
+
                                         Text(
-                                            buildAnnotatedString {
-                                                append("‘")
-                                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                                    append(showDeleteDialog?.name ?: "")
-                                                }
-                                                append("’을(를) 삭제하시겠습니까?")
-                                            },
+                                            text = annotated,
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -295,12 +304,12 @@ fun HabitTrackerScreen(
                                         viewModel.deleteHabit(showDeleteDialog!!)
                                         showDeleteDialog = null
                                     }) {
-                                        Text("삭제", color = Color.Red)
+                                        Text(text = stringResource(R.string.delete), color = Color.Red)
                                     }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { showDeleteDialog = null }) {
-                                        Text("취소")
+                                        Text(stringResource(R.string.cancel))
                                     }
                                 }
                             )
@@ -366,15 +375,15 @@ fun TopBarWithCountdownAndSettings(
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = onStatsClick) {
-                Icon(Icons.Default.InsertChart, contentDescription = "통계")
+                Icon(Icons.Default.InsertChart, contentDescription = stringResource(R.string.statistics))
             }
             IconButton(onClick = onSettingsClick) {
-                Icon(Icons.Default.Settings, contentDescription = "설정")
+                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.config))
             }
         }
 
         Text(
-            text = "남은 시간: $remainingTime",
+            text = stringResource(R.string.remaining_time, remainingTime),
             style = MaterialTheme.typography.labelMedium
         )
     }
@@ -392,25 +401,4 @@ fun calculateRemainingTime(endTime: LocalTime): String {
     val minutes = duration.toMinutes() % 60
     val seconds = duration.seconds % 60
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
-}
-
-@Composable
-fun RequestNotificationPermission() {
-    val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-    }
 }

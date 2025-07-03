@@ -2,9 +2,16 @@
     <string name="app_name">MyDailyTracker</string>
     <!-- Main Screen -->
     <string name="today_progress">Today\'s Progress</string>
-    <string name="completed_today">Completed Today</string>
     <string name="no_habits">No habits yet</string>
     <string name="add_habit">Add Habit</string>
+    <string name="new_habit_item">New Habit Item</string>
+    <string name="add">Add</string>
+    <string name="today_completed">🏆 Completed Today: %1$d / %2$d</string>
+    <string name="confirm_delete">Confirm Deletion</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_delete_message">Are you sure you want to delete ‘%1$s’?</string>
+    <string name="remaining_time">Remaining Time: %1$s</string>
 
     <!-- Habit Detail -->
     <string name="habit_details">Habit Details</string>
@@ -52,8 +59,7 @@
 
     <!-- Others -->
     <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
     <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
     <string name="back">Back</string>
+    <string name="config">Config</string>
 </resources>

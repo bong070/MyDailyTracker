@@ -225,7 +225,7 @@ fun BarChart(
                     Text(
                         text = day.label,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
                             .clickable { onDaySelected(index) }
                             .padding(top = maxBarHeight)

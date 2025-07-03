@@ -2,9 +2,16 @@
     <string name="app_name">MyDailyTracker</string>
     <!-- Main Screen -->
     <string name="today_progress">Today\'s Progress</string>
-    <string name="completed_today">Completed Today</string>
     <string name="no_habits">No habits yet</string>
     <string name="add_habit">Add Habit</string>
+    <string name="new_habit_item">새로운 목표 아이템</string>
+    <string name="add">추가</string>
+    <string name="today_completed">🏆 오늘 완료: %1$d / %2$d</string>
+    <string name="confirm_delete">삭제 확인</string>
+    <string name="delete">삭제</string>
+    <string name="cancel">취소</string>
+    <string name="confirm_delete_message">‘%1$s’을(를) 삭제하시겠습니까?</string>
+    <string name="remaining_time">남은 시간: %1$s</string>
 
     <!-- Habit Detail -->
     <string name="habit_details">Habit Details</string>
@@ -15,7 +22,7 @@
     <string name="notes">Notes</string>
 
     <!-- Statistics -->
-    <string name="statistics">퉁계</string>
+    <string name="statistics">통계</string>
     <string name="weekly_statistics">주간 통계</string>
     <string name="monthly_statistics">월간 통계</string>
     <string name="total_success_failure">📊 총 성공: %1$d / 실패: %2$d</string>
@@ -52,8 +59,7 @@
 
     <!-- Others -->
     <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
     <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
     <string name="back">Back</string>
+    <string name="config">설정</string>
 </resources>
