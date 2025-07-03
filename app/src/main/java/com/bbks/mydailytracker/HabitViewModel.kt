@@ -1,6 +1,7 @@
 package com.bbks.mydailytracker
 
 import SortOption
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bbks.mydailytracker.data.SettingsRepository
@@ -135,14 +136,13 @@ class HabitViewModel(
             if (existing == null) {
                 val newCheck = HabitCheck(habit.id, today, true)
                 habitCheckDao.insertHabitCheck(newCheck)
-                val refreshed = habitCheckDao.getHabitCheck(habit.id, today)
-                if (refreshed != null) {
-                    _habitChecks.update { it + (habit.id to refreshed) }
-                }
+                _habitChecks.update { it + (habit.id to newCheck) }
             } else {
                 habitCheckDao.deleteChecksForHabit(habit.id)
                 _habitChecks.update { it - habit.id }
             }
+
+            refreshHabitChecks(_habits.value)
         }
     }
 
@@ -211,6 +211,7 @@ class HabitViewModel(
             val loadedHabits = habitDao.getAllHabitsOnce()
             _habits.value = loadedHabits
             refreshHabitChecks(loadedHabits)
+            Log.d("ViewModel", "refreshHabits called")
         }
     }
 

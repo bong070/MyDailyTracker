@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">MyDailyTracker</string>
+    <!-- Main Screen -->
+    <string name="today_progress">Today\'s Progress</string>
+    <string name="completed_today">Completed Today</string>
+    <string name="no_habits">No habits yet</string>
+    <string name="add_habit">Add Habit</string>
+
+    <!-- Habit Detail -->
+    <string name="habit_details">Habit Details</string>
+    <string name="alarm_enabled">Alarm On</string>
+    <string name="alarm_disabled">Alarm Off</string>
+    <string name="repeat_days">Repeat Days</string>
+    <string name="alarm_time">Alarm Time</string>
+    <string name="notes">Notes</string>
+
+    <!-- Statistics -->
+    <string name="statistics">퉁계</string>
+    <string name="weekly_statistics">주간 통계</string>
+    <string name="monthly_statistics">월간 통계</string>
+    <string name="total_success_failure">📊 총 성공: %1$d / 실패: %2$d</string>
+    <string name="success_failure_format">✅ %1$s - 성공: %2$d, 실패: %3$d</string>
+    <string name="success_label_with_day">성공한 목표 - %1$s</string>
+    <string name="success_label_default">성공한 목표</string>
+    <string name="failure_label_with_day">실패한 목표 - %1$s</string>
+    <string name="failure_label_default">실패한 목표</string>
+    <string name="no_success">성공한 목표가 없습니다</string>
+    <string name="no_failure">실패한 목표가 없습니다 🎉</string>
+    <string name="year_month_format">%1$d년 %2$d월</string>
+    <string name="success_goals_with_date">✅ %1$d월 %2$d일 성공한 목표</string>
+    <string name="success_goals_with_date_and_rate">✅ %1$d월 %2$d일 성공한 목표 (%3$s%%)</string>
+    <string name="failed_goals_with_date">❌ %1$d월 %2$d일 실패한 목표</string>
+    <string name="previous_month">이전 달</string>
+    <string name="next_month">다음 달</string>
+    <string name="success_icon">성공한 목표 아이콘</string>
+    <string name="failure_icon">실패한 목표 아이콘</string>
+    <string name="expand_more">리스트 펼치기</string>
+    <string name="expand_less">리스트 접기</string>
+    <string name="success">성공</string>
+    <string name="failure">실패</string>
+
+        <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="reset_all_alarms">Reset All Alarms</string>
+
+    <!-- Premium -->
+    <string name="premium_feature_locked">This feature is available for premium users only.</string>
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="free_trial_info">Try Premium Free for 7 Days</string>
+
+    <!-- Others -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
+</resources>

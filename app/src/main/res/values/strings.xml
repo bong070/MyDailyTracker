@@ -1,3 +1,59 @@
 <resources>
     <string name="app_name">MyDailyTracker</string>
+    <!-- Main Screen -->
+    <string name="today_progress">Today\'s Progress</string>
+    <string name="completed_today">Completed Today</string>
+    <string name="no_habits">No habits yet</string>
+    <string name="add_habit">Add Habit</string>
+
+    <!-- Habit Detail -->
+    <string name="habit_details">Habit Details</string>
+    <string name="alarm_enabled">Alarm On</string>
+    <string name="alarm_disabled">Alarm Off</string>
+    <string name="repeat_days">Repeat Days</string>
+    <string name="alarm_time">Alarm Time</string>
+    <string name="notes">Notes</string>
+
+    <!-- Statistics -->
+    <string name="statistics">Statistics</string>
+    <string name="weekly_statistics">Weekly Statistics</string>
+    <string name="monthly_statistics">Monthly Statistics</string>
+    <string name="total_success_failure">📊 Total Success: %1$d / Failure: %2$d</string>
+    <string name="success_failure_format">✅ %1$s - Success: %2$d, Failure: %3$d</string>
+    <string name="success_label_with_day">Successed habits - %1$s</string>
+    <string name="success_label_default">Successed habits</string>
+    <string name="failure_label_with_day">Failed habits - %1$s</string>
+    <string name="failure_label_default">Failed habits</string>
+    <string name="no_success">No Successed habits</string>
+    <string name="no_failure">No Failed habits 🎉</string>
+    <string name="year_month_format">%2$d %1$s</string>
+    <string name="success_goals_with_date">✅ %1$d/%2$d Successed Habits</string>
+    <string name="success_goals_with_date_and_rate">✅ %1$d/%2$d Successed Habits (%3$s%%)</string>
+    <string name="failed_goals_with_date">❌ %1$d/%2$d Failed Habits</string>
+    <string name="previous_month">Previous Month</string>
+    <string name="next_month">Next Month</string>
+    <string name="success_icon">Successed goals icon</string>
+    <string name="failure_icon">Failed goals icon</string>
+    <string name="expand_more">Expand list</string>
+    <string name="expand_less">Collapse list</string>
+    <string name="success">Success</string>
+    <string name="failure">Failure</string>
+
+        <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="reset_all_alarms">Reset All Alarms</string>
+
+    <!-- Premium -->
+    <string name="premium_feature_locked">This feature is available for premium users only.</string>
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="free_trial_info">Try Premium Free for 7 Days</string>
+
+    <!-- Others -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
 </resources>
