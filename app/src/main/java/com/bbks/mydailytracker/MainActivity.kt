@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.sqlite.db.SimpleSQLiteQuery
 
 class MainActivity : ComponentActivity() {
 
@@ -158,8 +159,9 @@ class MainActivity : ComponentActivity() {
         ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
         lifecycleScope.launch {
             try {
-                db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL)")
-                Log.d("DB", "✅ WAL 병합 완료")
+                val query = SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)")
+                db.openHelper.writableDatabase.query(query)
+                Log.d("DB", "✅ WAL 병합 시도 완료")
             } catch (e: Exception) {
                 Log.e("DB", "❌ WAL 병합 실패: ${e.localizedMessage}")
             }

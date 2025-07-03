@@ -24,12 +24,6 @@ class HabitResetLogic(
         Log.d("HabitResetLogic", "Reset logic 실행됨 - 오늘: $today")
         val allHabits = habitRepository.getAllHabitsOnce()
 
-        val now = LocalTime.now()
-        if (now.hour != 0) {
-            Log.d("ResetLogic", "현재 시간은 자정이 아닙니다. 리셋 중단됨.")
-            return@withContext
-        }
-
         if (lastResetDate == LocalDate.now().toString()) {
             Log.d("Reset", "오늘 이미 실행됨")
             return@withContext
@@ -38,8 +32,6 @@ class HabitResetLogic(
         for (habit in allHabits) {
             val check = habitRepository.getCheckForHabit(habit.id, todayStr)
             val wasChecked = check != null
-            Log.d("HabitResetLogic", "습관: ${habit.name}")
-            Log.d("HabitResetLogic", "습관: ${habit.repeatDays.toString()}")
 
             // ✅ 1. 성공/실패 기록 저장 (예: HabitDailyResult 테이블로)
             habitRepository.saveDailyResult(habit.id, todayStr, wasChecked, habit.name)

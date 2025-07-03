@@ -597,7 +597,15 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
         Spacer(modifier = Modifier.height(12.dp))
 
         // 요일 헤더
-        val dayLabels = DayOfWeek.values().map {
+        val dayLabels = listOf(
+            DayOfWeek.SUNDAY,
+            DayOfWeek.MONDAY,
+            DayOfWeek.TUESDAY,
+            DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY,
+            DayOfWeek.FRIDAY,
+            DayOfWeek.SATURDAY
+        ).map {
             it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

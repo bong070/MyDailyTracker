@@ -33,8 +33,6 @@ object ResetAlarmHelper {
             }
         }
 
-        ResetLogger.log(context, "자정 알람 예약됨: ${Date(calendar.timeInMillis)}")
-
         alarmManager.cancel(pendingIntent)
 
         try {
