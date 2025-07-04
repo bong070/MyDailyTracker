@@ -1,6 +1,4 @@
-package com.bbks.mydailytracker.data
-
-import SortOption
+package com.bbks.mydailytracker
 
 data class UserPreferences(
     val endHour: Int = 23,

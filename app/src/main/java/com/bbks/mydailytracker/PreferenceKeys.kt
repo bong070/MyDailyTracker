@@ -1,4 +1,4 @@
-package com.bbks.mydailytracker.data
+package com.bbks.mydailytracker
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey

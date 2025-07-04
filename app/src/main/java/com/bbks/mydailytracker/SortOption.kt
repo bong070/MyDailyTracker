@@ -1,3 +1,5 @@
+package com.bbks.mydailytracker
+
 enum class SortOption(val displayName: String) {
     ALPHABETICAL("가나다순"),
     RECENT("최근 추가순"),

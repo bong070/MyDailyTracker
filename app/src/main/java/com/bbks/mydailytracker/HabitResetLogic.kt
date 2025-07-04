@@ -3,10 +3,8 @@ package com.bbks.mydailytracker
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
 import java.time.LocalDate
 import android.content.Context
-import java.time.LocalTime
 
 class HabitResetLogic(
     private val context: Context,

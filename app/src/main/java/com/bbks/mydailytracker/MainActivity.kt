@@ -8,7 +8,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import com.bbks.mydailytracker.data.SettingsRepository
 import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
 import com.google.android.gms.ads.MobileAds
 import androidx.navigation.compose.rememberNavController
