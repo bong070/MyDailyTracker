@@ -64,7 +64,6 @@ fun HabitTrackerScreen(
 
     var newHabitName by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
-    val sortOption by viewModel.sortOption.collectAsState()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val reorderState = rememberReorderableLazyListState(

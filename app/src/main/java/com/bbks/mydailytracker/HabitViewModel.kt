@@ -59,8 +59,8 @@ class HabitViewModel(
 
         when (sort) {
             SortOption.ALPHABETICAL -> filtered.sortedBy { it.name }
-            SortOption.COMPLETED_FIRST -> filtered.sortedByDescending {
-                habitChecks.value.containsKey(it.id)
+            SortOption.INCOMPLETED_FIRST -> filtered.sortedByDescending {
+                !habitChecks.value.containsKey(it.id)
             }
             SortOption.RECENT -> filtered.sortedByDescending { it.id }
             SortOption.MANUAL -> filtered.sortedBy { it.order }

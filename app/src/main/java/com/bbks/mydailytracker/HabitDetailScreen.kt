@@ -9,9 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -26,7 +24,6 @@ import java.time.LocalTime
 import java.time.format.TextStyle
 import java.util.Calendar
 import java.util.Locale
-import androidx.compose.foundation.lazy.items
 import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +33,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
@@ -53,8 +49,8 @@ import com.bbks.mydailytracker.ui.common.MyAppTopBar
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -63,7 +59,6 @@ fun HabitDetailScreen(
     viewModel: HabitViewModel,
     onBack: () -> Unit
 ) {
-    val statusBarColor = Color(0xFFFFF8E1)
     val context = LocalContext.current
 
     var loadedHabit by remember { mutableStateOf<Habit?>(null) }
@@ -81,7 +76,7 @@ fun HabitDetailScreen(
                 .padding(top = 100.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            Text("로딩 중...")
+            Text(stringResource(R.string.loading))
         }
         return
     }
@@ -105,13 +100,12 @@ fun HabitDetailScreen(
     }
 
     var noteText by remember { mutableStateOf(habit.note ?: "") }
-    val isChanged = remember(habit, noteText, alarmEnabled.value, timePickerState.value, selectedDays) {
-        noteText != (habit.note ?: "") ||
-                alarmEnabled.value != habit.alarmEnabled ||
-                timePickerState.value.hour != (habit.alarmHour ?: 8) ||
-                timePickerState.value.minute != (habit.alarmMinute ?: 0) ||
-                selectedDays.toSet() != habit.repeatDays.toSet()
-    }
+
+    val isModified = habit.note != noteText ||
+            habit.repeatDays.toSet() != selectedDays.toSet() ||
+            habit.alarmEnabled != alarmEnabled.value ||
+            habit.alarmHour != timePickerState.value.hour ||
+            habit.alarmMinute != timePickerState.value.minute
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -141,7 +135,7 @@ fun HabitDetailScreen(
 
                     if (alarmEnabled.value) {
                         if (!canScheduleExactAlarms(context)) {
-                            Toast.makeText(context, "정확한 알람 권한이 필요합니다.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, context.getString(R.string.need_exact_alarm_permission), Toast.LENGTH_LONG).show()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                                 context.startActivity(intent)
@@ -157,16 +151,18 @@ fun HabitDetailScreen(
                             selectedDays,
                             habitTitle = habit.name
                         )
-                        Toast.makeText(context, "알람이 설정되었습니다", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.alarm_set), Toast.LENGTH_SHORT).show()
                     } else {
                         cancelWeeklyAlarms(context, habit.id, habit.repeatDays)
-                        Toast.makeText(context, "알람이 취소되었습니다", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.alarm_cancel), Toast.LENGTH_SHORT).show()
                     }
 
                     viewModel.updateHabit(updatedHabit)
                     onBack()
-                }) {
-                    Text("저장")
+                },
+                    enabled = isModified
+                ) {
+                    Text(stringResource(R.string.save))
                 }
             }
         }
@@ -176,7 +172,7 @@ fun HabitDetailScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-// 🟡 반복 요일 + 알람 카드 (중간에 Divider로 분리)
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -186,14 +182,13 @@ fun HabitDetailScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
 
-                    // 🔁 반복 요일
                     Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
                     Spacer(Modifier.height(12.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp), // ✅ 양쪽 동일 여백
-                        horizontalArrangement = Arrangement.spacedBy(8.dp) // ✅ 칩 간 간격
+                            .padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         daysOfWeek.forEach { day ->
                             val isSelected = selectedDays.contains(day.value)
@@ -214,7 +209,7 @@ fun HabitDetailScreen(
                                 },
                                 leadingIcon = null,
                                 modifier = Modifier
-                                    .weight(1f)  // ✅ 고정 너비로 칩 간 폭 통일
+                                    .weight(1f)
                                     .height(36.dp),
                                 colors = FilterChipDefaults.filterChipColors(
                                     containerColor = if (isSelected) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
@@ -224,7 +219,6 @@ fun HabitDetailScreen(
                         }
                     }
 
-                    // 🔻 구분선
                     Spacer(Modifier.height(12.dp))
                     Divider(thickness = 1.dp, color = Color.Gray.copy(alpha = 0.3f))
                     Spacer(Modifier.height(12.dp))
@@ -240,7 +234,7 @@ fun HabitDetailScreen(
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            "알람 설정",
+                            text = stringResource(R.string.alarm_setting),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -264,7 +258,6 @@ fun HabitDetailScreen(
                     if (alarmEnabled.value) {
                         Spacer(Modifier.height(12.dp))
 
-                        // 알람 시간 선택 버튼 (Outlined 스타일)
                         OutlinedButton(
                             onClick = {
                                 showLocalTimePickerDialog(context, timePickerState.value) {
@@ -288,8 +281,9 @@ fun HabitDetailScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "$currentTimeText · 시간 변경",
-                                style = MaterialTheme.typography.bodyMedium
+                                text = stringResource(R.string.change_time, currentTimeText),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -298,21 +292,50 @@ fun HabitDetailScreen(
                     Divider(thickness = 1.dp, color = Color.Gray.copy(alpha = 0.3f))
                     Spacer(Modifier.height(12.dp))
 
-                    // ✅ 현재 설정
-                    Text("현재 설정", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-                    Text("반복 요일: ${currentDaysText.ifEmpty { "없음" }}", style = MaterialTheme.typography.bodySmall)
-                    Text(    text = if (alarmEnabled.value) "알람 시간: ${currentTimeText.ifEmpty { "없음" }}" else "알람 시간: 없음",
-                        style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.current_settings), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onBackground)
+                    Text(
+                        text = stringResource(
+                            R.string.repetition_days,
+                            if (currentDaysText.isEmpty()) stringResource(R.string.not_set) else currentDaysText,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.alarm_time,
+                            if (alarmEnabled.value) {
+                                currentTimeText.ifEmpty { stringResource(R.string.not_set) }
+                            } else {
+                                stringResource(R.string.not_set)
+                            }
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
 
                     Spacer(Modifier.height(8.dp))
 
-                    // ☑ 저장된 설정
                     Text(
-                        "저장된 설정",
+                        stringResource(R.string.saved_settings),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = Color.Gray)
                     )
-                    Text("반복 요일: ${savedDaysText.ifEmpty { "없음" }}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    Text("알람 시간: ${savedTimeText ?: "없음"}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(
+                        text = stringResource(
+                            R.string.repetition_days,
+                            savedDaysText.ifEmpty { stringResource(R.string.not_set) }
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.alarm_time,
+                            savedTimeText ?: stringResource(R.string.not_set)
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
                 }
             }
 
@@ -329,13 +352,13 @@ fun HabitDetailScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     // 제목
                     Text(
-                        text = "📝 메모",
+                        stringResource(R.string.notes),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Text(
-                        text = "최대 5줄까지 입력할 수 있어요",
+                        text = stringResource(R.string.notes_ins),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray,
                         modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
@@ -343,7 +366,6 @@ fun HabitDetailScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    // 줄노트 입력 필드
                     LinedNoteField(
                         text = noteText,
                         onTextChange = { noteText = it },
@@ -375,7 +397,6 @@ fun scheduleWeeklyAlarms(context: Context, habitId: Int, hour: Int, minute: Int,
 
     val actualRepeatDays = if (repeatDays.isEmpty()) {
         listOf(Calendar.getInstance().get(Calendar.DAY_OF_WEEK).let {
-            // Calendar의 요일 값(1~7)을 DayOfWeek(1~7)와 일치시킴
             if (it == Calendar.SUNDAY) 7 else it - 1
         })
     } else {
@@ -383,7 +404,6 @@ fun scheduleWeeklyAlarms(context: Context, habitId: Int, hour: Int, minute: Int,
     }
 
     for (day in actualRepeatDays) {
-        // 기존 알람 취소
         val requestCode = habitId * 10 + day
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("dayOfWeek", day)
@@ -397,7 +417,6 @@ fun scheduleWeeklyAlarms(context: Context, habitId: Int, hour: Int, minute: Int,
         )
         if (cancelIntent != null) {
             alarmManager.cancel(cancelIntent)
-            Log.d("AlarmSchedule", "🔄 기존 알람 취소 - 요일: $day")
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -420,8 +439,6 @@ fun scheduleWeeklyAlarms(context: Context, habitId: Int, hour: Int, minute: Int,
             }
         }
 
-        Log.d("AlarmSchedule", "알람 설정 - 요일: $day, 시간: ${calendar.time}")
-
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
@@ -443,7 +460,6 @@ fun cancelWeeklyAlarms(context: Context, habitId: Int, repeatDays: List<Int>) {
         )
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
-            Log.d("AlarmCancel", "습관ID=$habitId, 요일=$day 알람 취소됨")
         }
     }
 }
@@ -471,15 +487,14 @@ fun cancelAllAlarms(context: Context, habitIds: List<Int>) {
             )
             if (pendingIntent != null) {
                 alarmManager.cancel(pendingIntent)
-                Log.d("AlarmCancel", "전체 초기화 - 습관ID=$habitId, 요일=$day 알람 취소됨")
             }
         }
     }
 }
 
 fun formatDaysText(repeatDays: List<Int>): String {
-    return repeatDays
-        .map { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
+    return repeatDays.sorted()
+        .mapNotNull { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
         .joinToString(", ")
 }
 
@@ -495,7 +510,7 @@ fun RequestNotificationPermissionOnce() {
     ) { isGranted ->
         setAskedNotificationPermission(context)
         if (!isGranted) {
-            Toast.makeText(context, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.notification_permission_denied), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -507,7 +522,7 @@ fun RequestNotificationPermissionOnce() {
                 ) {
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
-                    setAskedNotificationPermission(context) // 이미 허용된 경우도 체크
+                    setAskedNotificationPermission(context)
                 }
             }
         }
@@ -535,7 +550,6 @@ fun LinedNoteField(
     val visibleLines = 5
     val noteFont = FontFamily(Font(R.font.nanum_pen_script))
 
-    // 🎨 색상 다크/라이트 대응
     val backgroundColor = MaterialTheme.colorScheme.surface
     val lineColor = if (isDark) Color(0xFF555555) else Color(0xFFBDBDBD)
     val textColor = if (isDark) Color(0xFFE0E0E0) else Color(0xFF4E4E4E)
@@ -548,9 +562,8 @@ fun LinedNoteField(
             .height(lineHeight * visibleLines)
             .background(backgroundColor)
     ) {
-        // 밑줄 배경
         Canvas(modifier = Modifier.matchParentSize()) {
-            val paddingTopPx = 8.dp.toPx() // BasicTextField의 top padding
+            val paddingTopPx = 8.dp.toPx()
             val totalLines = 6
             repeat(totalLines) { i ->
                 val y = paddingTopPx + lineHeight.toPx() * i
@@ -588,4 +601,3 @@ fun LinedNoteField(
         )
     }
 }
-

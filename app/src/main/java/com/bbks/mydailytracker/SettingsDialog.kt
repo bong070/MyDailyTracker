@@ -1,16 +1,28 @@
 package com.bbks.mydailytracker
 
-import android.app.TimePickerDialog
-import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import java.util.*
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun SettingsDialog(
@@ -18,148 +30,191 @@ fun SettingsDialog(
     viewModel: HabitViewModel
 ) {
     val context = LocalContext.current
-
-    // ✅ ViewModel 값들과 직접 바인딩 (앱 재시작 후에도 유지됨)
-    val endTime by viewModel.endTime.collectAsState()
     val alarmEnabled by viewModel.alarmEnabled.collectAsState()
-    val autoDelete by viewModel.autoDelete.collectAsState()
     val selectedSortOption by viewModel.sortOption.collectAsState()
+    val habitIds = viewModel.habits.collectAsState().value.map { it.id }
 
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 
-    // 🔁 전체 알람 초기화 확인 다이얼로그
     if (showResetConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showResetConfirmDialog = false },
-            title = { Text("전체 알람 초기화") },
-            text = { Text("모든 요일의 알람을 삭제하시겠습니까?") },
+            title = { Text(stringResource(R.string.reset_all_alarms), color = MaterialTheme.colorScheme.onBackground) },
+            text = { Text(stringResource(R.string.confirm_reset_all_alarms), color = MaterialTheme.colorScheme.onBackground) },
             confirmButton = {
                 TextButton(onClick = {
-                    val habitIds = viewModel.habits.value.map { it.id }
                     cancelAllAlarms(context, habitIds)
                     viewModel.disableAllHabitAlarms()
-                    Toast.makeText(context, "모든 알람이 초기화되었습니다", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_reset_done), Toast.LENGTH_SHORT).show()
                     showResetConfirmDialog = false
-                }) { Text("확인") }
+                }) { Text(stringResource(R.string.confirm)) }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmDialog = false }) {
-                    Text("취소")
+                    Text(stringResource(R.string.cancel))
                 }
-            }
+            },
         )
     }
 
-    // ⚙️ 설정 다이얼로그 본체
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("닫기") } // 저장 버튼 필요 없음: 즉시 저장되므로
-        },
-        dismissButton = null,
-        title = { Text("설정") },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-
-                /*Text("목표 종료 시간", style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(4.dp))
-                Text("%02d:%02d".format(endTime.hour, endTime.minute))
-                val context = LocalContext.current
-                Button(
-                    onClick = {
-                        showTimePickerDialog(context) { selectedTime ->
-                            viewModel.setEndTime(context, LocalTime.of(selectedTime.first, selectedTime.second))
-                        }
-                    },
-                    modifier = Modifier.padding(top = 4.dp)
-                ) {
-                    Text("시간 선택")
-                }
-
-                Spacer(Modifier.height(16.dp))*/
-
-                // 2️⃣ 정렬 방식
-                Text("정렬 방식", style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(4.dp))
-                DropdownMenuBox(
-                    options = SortOption.values().toList(),
-                    selected = selectedSortOption,
-                    onSelect = { viewModel.setSortOption(it) }
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            tonalElevation = 6.dp,
+            modifier = Modifier
+                .widthIn(min = 320.dp, max = 380.dp)
+                .wrapContentHeight()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.settings),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
-                Spacer(Modifier.height(16.dp))
-
-                // 3️⃣ 알림 사용
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🔔 알림 사용")
-                    Spacer(Modifier.weight(1f))
-                    Switch(
-                        checked = alarmEnabled,
-                        onCheckedChange = { viewModel.setAlarmEnabled(it) }
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(stringResource(R.string.sort_mode), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onBackground)
+                    CustomSortDropdown(
+                        selected = selectedSortOption,
+                        onSelect = { viewModel.setSortOption(it) }
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                val dialogBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+                val borderColor = MaterialTheme.colorScheme.outline
 
-                // 4️⃣ 자동 초기화
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🗑️ 자동 초기화")
-                    Spacer(Modifier.weight(1f))
-                    Switch(
-                        checked = autoDelete,
-                        onCheckedChange = { viewModel.setAutoDelete(it) }
-                    )
+                OutlinedButton(
+                    onClick = {}, // 눌림 없음
+                    enabled = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = dialogBackground,
+                        disabledContainerColor = dialogBackground,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    border = BorderStroke(1.dp, borderColor),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.use_notifications),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Switch(
+                            checked = alarmEnabled,
+                            onCheckedChange = { viewModel.setAlarmEnabled(it) }
+                        )
+                    }
                 }
 
-                Spacer(Modifier.height(24.dp))
-
-                // 5️⃣ 전체 알람 초기화 버튼
                 Button(
                     onClick = { showResetConfirmDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE57373))
                 ) {
-                    Text("전체 알람 초기화")
+                    Text(stringResource(R.string.reset_all_alarms), color = MaterialTheme.colorScheme.onBackground)
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:bbksapps@gmail.com")
+                            putExtra(Intent.EXTRA_SUBJECT, "My Daily Tracker Feedback")
+                        }
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(stringResource(R.string.send_feedback), color = MaterialTheme.colorScheme.onBackground)
+                }
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
-    )
-}
-
-fun showTimePickerDialog(context: Context, onTimeSelected: (Pair<Int, Int>) -> Unit) {
-    val calendar = Calendar.getInstance()
-    val hour = calendar.get(Calendar.HOUR_OF_DAY)
-    val minute = calendar.get(Calendar.MINUTE)
-
-    TimePickerDialog(
-        context,
-        { _, selectedHour, selectedMinute ->
-            onTimeSelected(selectedHour to selectedMinute)
-        },
-        hour, minute, true
-    ).show()
+    }
 }
 
 @Composable
-fun DropdownMenuBox(
-    options: List<SortOption>,
+fun CustomSortDropdown(
     selected: SortOption,
     onSelect: (SortOption) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    OutlinedButton(onClick = { expanded = true }) {
-        Text("정렬: ${selected.displayName}")
-    }
+    val borderColor = MaterialTheme.colorScheme.outline
+    val dialogBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
 
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-        options.forEach { option ->
-            DropdownMenuItem(
-                text = { Text(option.displayName) },
-                onClick = {
-                    onSelect(option)
-                    expanded = false
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .border(1.dp, borderColor, RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .background(dialogBackground)
+            .clickable { expanded = true }
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(id = selected.labelResId),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f)
             )
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(dialogBackground)
+                .widthIn(min = 200.dp)
+        ) {
+            SortOption.values().forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(option.labelResId),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

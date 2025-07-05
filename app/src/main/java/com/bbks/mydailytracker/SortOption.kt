@@ -1,8 +1,10 @@
 package com.bbks.mydailytracker
 
-enum class SortOption(val displayName: String) {
-    ALPHABETICAL("가나다순"),
-    RECENT("최근 추가순"),
-    COMPLETED_FIRST("완료 우선"),
-    MANUAL("사용자 지정")
+import androidx.annotation.StringRes
+
+enum class SortOption(@StringRes val labelResId: Int) {
+    ALPHABETICAL(R.string.sort_alphabetical),
+    RECENT(R.string.sort_recent),
+    INCOMPLETED_FIRST(R.string.sort_incompleted_first),
+    MANUAL(R.string.sort_manual)
 }
