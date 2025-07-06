@@ -64,6 +64,10 @@
     <string name="sort_recent">최근 추가순</string>
     <string name="sort_incompleted_first">할 일 우선</string>
     <string name="sort_manual">사용자 지정</string>
+    <string name="alarm_stop">알람 멈추기</string>
+    <string name="alarm_on">알람이 울리고 있어요!</string>
+    <string name="notification_blocked_warning">알림이 차단되어 있어 알람을 설정할 수 없습니다. 앱 알림을 먼저 켜주세요.</string>
+    <string name="go_to_settings">설정으로 이동</string>
 
     <!-- Premium -->
     <string name="premium_feature_locked">This feature is available for premium users only.</string>

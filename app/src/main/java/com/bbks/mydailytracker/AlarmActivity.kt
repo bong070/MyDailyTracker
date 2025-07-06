@@ -12,12 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bbks.mydailytracker.ui.theme.MyDailyTrackerTheme
 
 class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val title = intent?.getStringExtra("habitTitle") ?: "알람이 울리고 있어요!"
+        val title = intent?.getStringExtra("habitTitle") ?: getString(R.string.alarm_on)
         super.onCreate(savedInstanceState)
 
         // 전체 화면 및 화면 켜기
@@ -65,12 +66,12 @@ fun AlarmUIScreen(title: String, onStopAlarm: () -> Unit) {
         ) {
             Text(
                 text = title,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onStopAlarm) {
-                Text("알람 멈추기")
+                Text(stringResource(R.string.alarm_stop))
             }
         }
     }

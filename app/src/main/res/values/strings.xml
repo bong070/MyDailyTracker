@@ -64,6 +64,10 @@
     <string name="sort_recent">Recent</string>
     <string name="sort_incompleted_first">To do first</string>
     <string name="sort_manual">Manual</string>
+    <string name="alarm_stop">Stop Alarm</string>
+    <string name="alarm_on">Alarm is ON</string>
+    <string name="notification_blocked_warning">Turn on Notifications first to enable Alarm</string>
+    <string name="go_to_settings">Go to Settings</string>
 
     <!-- Premium -->
     <string name="premium_feature_locked">This feature is available for premium users only.</string>

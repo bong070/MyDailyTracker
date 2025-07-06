@@ -89,7 +89,7 @@ fun SettingsDialog(
                 val dialogBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
                 val borderColor = MaterialTheme.colorScheme.outline
 
-                OutlinedButton(
+                /*OutlinedButton(
                     onClick = {}, // 눌림 없음
                     enabled = false,
                     modifier = Modifier
@@ -119,7 +119,7 @@ fun SettingsDialog(
                             onCheckedChange = { viewModel.setAlarmEnabled(it) }
                         )
                     }
-                }
+                }*/
 
                 Button(
                     onClick = { showResetConfirmDialog = true },

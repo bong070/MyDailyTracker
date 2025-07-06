@@ -29,6 +29,7 @@ import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.app.NotificationManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -51,6 +52,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.app.NotificationManagerCompat
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -242,6 +244,24 @@ fun HabitDetailScreen(
                         Switch(
                             checked = alarmEnabled.value,
                             onCheckedChange = {
+                                if (it && areNotificationsBlocked(context)) {
+                                    val notificationManager = NotificationManagerCompat.from(context)
+                                    if (!notificationManager.areNotificationsEnabled()) {
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.notification_blocked_warning),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                        }
+                                        context.startActivity(intent)
+
+                                        return@Switch
+                                    }
+                                }
+
                                 if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                                     if (!alarmManager.canScheduleExactAlarms()) {
@@ -601,3 +621,9 @@ fun LinedNoteField(
         )
     }
 }
+
+fun areNotificationsBlocked(context: Context): Boolean {
+    val notificationManager = ContextCompat.getSystemService(context, NotificationManager::class.java)
+    return !(notificationManager?.areNotificationsEnabled() ?: true)
+}
+
