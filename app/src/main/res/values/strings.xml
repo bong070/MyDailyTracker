@@ -18,8 +18,8 @@
     <string name="statistics">Statistics</string>
     <string name="weekly_statistics">Weekly Statistics</string>
     <string name="monthly_statistics">Monthly Statistics</string>
-    <string name="total_success_failure">📊 Total Success: %1$d / Failure: %2$d</string>
-    <string name="success_failure_format">✅ %1$s - Success: %2$d, Failure: %3$d</string>
+    <string name="total_success_failure">📊 Total Success: %1$d / Failure: %2$d · Success Rate: %3$d%%</string>
+    <string name="success_failure_format">✅ %1$s - Success: %2$d / Failure: %3$d · Success Rate: %4$d%%</string>
     <string name="success_label_with_day">Successed habits - %1$s</string>
     <string name="success_label_default">Successed habits</string>
     <string name="failure_label_with_day">Failed habits - %1$s</string>
@@ -27,6 +27,7 @@
     <string name="no_success">No Successed habits</string>
     <string name="no_failure">No Failed habits 🎉</string>
     <string name="year_month_format">%2$d %1$s</string>
+    <string name="year_month_with_rate_format">%2$d %1$s · Success Rate: %3$d%%</string>
     <string name="success_goals_with_date">✅ %1$d/%2$d Successed Habits</string>
     <string name="success_goals_with_date_and_rate">✅ %1$d/%2$d Successed Habits (%3$s%%)</string>
     <string name="failed_goals_with_date">❌ %1$d/%2$d Failed Habits</string>

@@ -18,8 +18,8 @@
     <string name="statistics">통계</string>
     <string name="weekly_statistics">주간 통계</string>
     <string name="monthly_statistics">월간 통계</string>
-    <string name="total_success_failure">📊 총 성공: %1$d / 실패: %2$d</string>
-    <string name="success_failure_format">✅ %1$s - 성공: %2$d, 실패: %3$d</string>
+    <string name="total_success_failure">📊 총 성공: %1$d / 실패: %2$d · 성공률: %3$d%%</string>
+    <string name="success_failure_format">✅ %1$s - 성공: %2$d / 실패: %3$d · 성공률: %4$d%%</string>
     <string name="success_label_with_day">성공한 목표 - %1$s</string>
     <string name="success_label_default">성공한 목표</string>
     <string name="failure_label_with_day">실패한 목표 - %1$s</string>
@@ -27,6 +27,7 @@
     <string name="no_success">성공한 목표가 없습니다</string>
     <string name="no_failure">실패한 목표가 없습니다 🎉</string>
     <string name="year_month_format">%1$d년 %2$d월</string>
+    <string name="year_month_with_rate_format">%1$d년 %2$d월 · 성공률: %3$d%%</string>
     <string name="success_goals_with_date">✅ %1$d월 %2$d일 성공한 목표</string>
     <string name="success_goals_with_date_and_rate">✅ %1$d월 %2$d일 성공한 목표 (%3$s%%)</string>
     <string name="failed_goals_with_date">❌ %1$d월 %2$d일 실패한 목표</string>

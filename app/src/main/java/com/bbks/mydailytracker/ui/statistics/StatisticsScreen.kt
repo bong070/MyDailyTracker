@@ -277,9 +277,11 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
         item {
             val totalSuccess = filteredStats.sumOf { it.success }
             val totalFailure = filteredStats.sumOf { it.failure }
+            val totalCount = totalSuccess + totalFailure
+            val successRate = if (totalCount > 0) (totalSuccess * 100 / totalCount) else 0
 
             Text(
-                text = stringResource(R.string.total_success_failure, totalSuccess, totalFailure),
+                text = stringResource(R.string.total_success_failure, totalSuccess, totalFailure, successRate),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
@@ -370,12 +372,15 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
             Spacer(modifier = Modifier.height(24.dp))
 
             selectedStats?.let {
+                val total = it.success + it.failure
+                val rate = if (total > 0) (it.success * 100 / total) else 0
                 Text(
                     text = stringResource(
                         R.string.success_failure_format,
                         it.label,
                         it.success,
-                        it.failure
+                        it.failure,
+                        rate
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
@@ -389,12 +394,14 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            val successCardColor = if (isSystemInDarkTheme()) Color(0xFF66BB6A) else Color(0xFFA5D6A7)
+            val failureCardColor = if (isSystemInDarkTheme()) Color(0xFFE57373) else Color(0xFFF28B82)
 
             // ✅ 성공 카드
             Card(
                 onClick = { showSuccessList = !showSuccessList },
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFA5D6A7)),
+                colors = CardDefaults.cardColors(containerColor = successCardColor),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -455,7 +462,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
             Card(
                 onClick = { showFailureList = !showFailureList },
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF28B82)),
+                colors = CardDefaults.cardColors(containerColor = failureCardColor),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -533,7 +540,6 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
     val weeks = (totalGridCount + 6) / 7
 
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    val isDarkMode = isSystemInDarkTheme()
 
 
     val statsByDate = remember(monthlyStats, habits) {
@@ -560,6 +566,13 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        val (totalSuccess, totalFailure) = statsByDate.values.fold(0 to 0) { acc, (success, failure) ->
+            acc.first + success.size to acc.second + failure.size
+        }
+        val monthlyRate = if (totalSuccess + totalFailure > 0) {
+            (totalSuccess * 100) / (totalSuccess + totalFailure)
+        } else null
+
         // 상단 년/월 + 화살표
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -570,11 +583,20 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                 Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.previous_month), tint = textColor)
             }
             Text(
-                text = stringResource(
-                    R.string.year_month_format,
-                    currentMonth.year,
-                    currentMonth.monthValue
-                ),
+                text = if (monthlyRate != null) {
+                    stringResource(
+                        R.string.year_month_with_rate_format,
+                        currentMonth.year,
+                        currentMonth.monthValue,
+                        monthlyRate
+                    )
+                } else {
+                    stringResource(
+                        R.string.year_month_format,
+                        currentMonth.year,
+                        currentMonth.monthValue
+                    )
+                },
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 color = textColor
@@ -672,11 +694,13 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
             val (successHabits, failureHabits) = statsByDate[date] ?: Pair(emptyList(), emptyList())
             val totalCount = successHabits.size + failureHabits.size
             val successRate = if (totalCount > 0) (successHabits.size * 100) / totalCount else null
+            val successCardColor = if (isDark) Color(0xFF66BB6A) else Color(0xFFA5D6A7)
+            val failureCardColor = if (isDark) Color(0xFFE57373) else Color(0xFFF28B82)
 
             // 성공 카드
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFA5D6A7)),
+                colors = CardDefaults.cardColors(containerColor = successCardColor),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
@@ -716,7 +740,7 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
             // 실패 카드
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF28B82)),
+                colors = CardDefaults.cardColors(containerColor = failureCardColor),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
