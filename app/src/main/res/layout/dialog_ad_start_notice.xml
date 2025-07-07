@@ -1,0 +1,29 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/ad_notice_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="무료 진입 기회 (2회) 를 모두 사용했어요.\n광고를 보면 설정 화면으로 이동할 수 있어요."
+        android:textSize="16sp"
+        android:textAlignment="center"
+        android:paddingBottom="16dp" />
+
+    <Button
+        android:id="@+id/ad_start_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="광고 보기" />
+
+    <Button
+        android:id="@+id/ad_cancel_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="닫기"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/darker_gray"/>
+</LinearLayout>

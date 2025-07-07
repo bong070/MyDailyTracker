@@ -19,6 +19,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.withStyle
 @Composable
 fun HabitTrackerScreen(
     viewModel: HabitViewModel,
+    rewardedAdController: RewardedAdController,
     onNavigateToStats: () -> Unit,
     onNavigateToDetail: (Int) -> Unit
 ) {
@@ -76,6 +78,10 @@ fun HabitTrackerScreen(
     val draggingIndex = reorderState.draggingItemIndex
     val keyboardController = LocalSoftwareKeyboardController.current
     var showDeleteDialog by remember { mutableStateOf<Habit?>(null) }
+
+    val context = LocalContext.current
+    val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val entryCount by viewModel.detailEntryCount.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -203,7 +209,21 @@ fun HabitTrackerScreen(
                                 .background(bgColor)
                                 .animateContentSize()
                                 .clickable {
-                                    onNavigateToDetail(habit.id)
+                                    val remainingCount = 2 - entryCount
+                                    if (isPremiumUser) {
+                                        onNavigateToDetail(habit.id)
+                                    }  else {
+                                        rewardedAdController.showAd(
+                                            remainingCount = remainingCount,
+                                            onSuccess = {
+                                                viewModel.onDetailEntrySuccess()
+                                                onNavigateToDetail(habit.id)
+                                            },
+                                            onFail = {
+                                                Toast.makeText(context, "광고를 불러오지 못했어요.", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    }
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {

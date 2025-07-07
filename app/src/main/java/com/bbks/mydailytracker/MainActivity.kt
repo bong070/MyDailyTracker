@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: HabitViewModel
     private lateinit var billingLauncher: BillingLauncher
+    private lateinit var rewardedAdController: RewardedAdController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +57,8 @@ class MainActivity : ComponentActivity() {
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
         MobileAds.initialize(this) {}
+        rewardedAdController = RewardedAdController(this, "ca-app-pub-3940256099942544/5224354917")
+        rewardedAdController.loadAd()
 
         setContent {
             MyDailyTrackerTheme {
@@ -92,6 +95,7 @@ class MainActivity : ComponentActivity() {
                             composable("main") {
                                 HabitTrackerScreen(
                                     viewModel = viewModel,
+                                    rewardedAdController = rewardedAdController,
                                     onNavigateToStats = { navController.navigate("statistics") },
                                     onNavigateToDetail = { habitId ->
                                         navController.navigate("detail/$habitId")
@@ -117,23 +121,15 @@ class MainActivity : ComponentActivity() {
                             composable("detail/{habitId}") { backStackEntry ->
                                 val habitId = backStackEntry.arguments?.getString("habitId")?.toIntOrNull()
                                 if (habitId != null) {
-                                    if (isPremiumUser) {
-                                        HabitDetailScreen(
-                                            habitId = habitId,
-                                            viewModel = viewModel,
-                                            onBack = {
-                                                if (navController.previousBackStackEntry != null) {
-                                                    navController.popBackStack()
-                                                }
-                                            }
-                                        )
-                                    } else {
-                                        LaunchedEffect(Unit) {
-                                            navController.navigate("locked") {
-                                                popUpTo("detail/{habitId}") { inclusive = true }
+                                    HabitDetailScreen(
+                                        habitId = habitId,
+                                        viewModel = viewModel,
+                                        onBack = {
+                                            if (navController.previousBackStackEntry != null) {
+                                                navController.popBackStack()
                                             }
                                         }
-                                    }
+                                    )
                                 }
                             }
 

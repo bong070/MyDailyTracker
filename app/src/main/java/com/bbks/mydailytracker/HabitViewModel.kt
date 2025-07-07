@@ -47,6 +47,17 @@ class HabitViewModel(
     private val _isPremiumUser = MutableStateFlow(false)
     val isPremiumUser: StateFlow<Boolean> = _isPremiumUser
 
+    val detailEntryCount: StateFlow<Int> = settingsRepository.detailEntryCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun onDetailEntrySuccess() {
+        viewModelScope.launch {
+            if (!isPremiumUser.value) {
+                settingsRepository.incrementDetailEntryCount()
+            }
+        }
+    }
+
     val sortedHabits = combine(habits, sortOption) { habitList, sort ->
         var targetDay = LocalDate.now().dayOfWeek.value
         val filtered = habitList.filter {
