@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="ic_launcher_background">#5DAFFF</color>
+    <color name="ad_button_yellow">#FFC107</color>
+    <color name="ad_button_blue">#1E88E5</color>
 </resources>

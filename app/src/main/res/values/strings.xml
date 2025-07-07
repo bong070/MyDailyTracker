@@ -72,11 +72,15 @@
 
     <!-- Premium -->
     <string name="premium_feature_locked">This feature is available for premium users only.</string>
-    <string name="upgrade_to_premium">Upgrade to Premium</string>
     <string name="free_trial_info">Try Premium Free for 7 Days</string>
+    <string name="ad_notice_message"><b>%1$s</b> %2$s</string>
+    <string name="ad_notice_bold">Daily access limit (2) has been reached.</string>
+    <string name="ad_notice_rest">Watch the ad to continue to the detail setting screen.</string>
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
 
     <!-- Others -->
     <string name="loading">Loading...</string>
     <string name="save">Save</string>
     <string name="config">Config</string>
+    <string name="watch_ad">Watch Ads</string>
 </resources>

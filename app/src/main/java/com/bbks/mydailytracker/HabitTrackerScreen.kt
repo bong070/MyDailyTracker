@@ -51,7 +51,8 @@ fun HabitTrackerScreen(
     viewModel: HabitViewModel,
     rewardedAdController: RewardedAdController,
     onNavigateToStats: () -> Unit,
-    onNavigateToDetail: (Int) -> Unit
+    onNavigateToDetail: (Int) -> Unit,
+    onUpgradeClick: () -> Unit
 ) {
 
     LaunchedEffect(Unit) {
@@ -94,7 +95,11 @@ fun HabitTrackerScreen(
                 onStatsClick = onNavigateToStats
             )
         },
-        bottomBar = { AdMobBanner() }
+        bottomBar = {
+            if (!isPremiumUser) {
+                AdMobBanner()
+            }
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -221,6 +226,9 @@ fun HabitTrackerScreen(
                                             },
                                             onFail = {
                                                 Toast.makeText(context, "광고를 불러오지 못했어요.", Toast.LENGTH_SHORT).show()
+                                            },
+                                            onUpgradeClick = {
+                                                onUpgradeClick()
                                             }
                                         )
                                     }

@@ -85,9 +85,9 @@ class MainActivity : ComponentActivity() {
                 billingLauncher.setup()
                 billingLauncher.restorePurchase()
 
-                LaunchedEffect(Unit) { //테스트용
-                    viewModel.overridePremiumUserForDebug(true)
-                }
+                //LaunchedEffect(Unit) { //테스트용
+                //    viewModel.overridePremiumUserForDebug(true)
+                //}
 
                 Column {
                     Box(modifier = Modifier.weight(1f)) {
@@ -99,6 +99,9 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToStats = { navController.navigate("statistics") },
                                     onNavigateToDetail = { habitId ->
                                         navController.navigate("detail/$habitId")
+                                    },
+                                    onUpgradeClick = {
+                                        navController.navigate("locked") // ✅ 여기서 정의해서 전달
                                     }
                                 )
                             }
