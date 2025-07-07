@@ -222,6 +222,7 @@ class HabitViewModel(
 
     fun getWeekStatsForUI(): StateFlow<List<DayStats>> {
         return weeklyStats
+            .map { it.distinctBy { result -> "${result.date}_${result.habitId}" } }
             .combine(habits) { results, habitList ->
                 val habitMap = habitList.associateBy { it.id }
 
@@ -230,6 +231,7 @@ class HabitViewModel(
                     .toSortedMap()       // 월~일 순 정렬
                     .map { (date, entries) ->
                         val filteredEntries = entries.filter { result ->
+                            Log.d("STATS_DEBUG", "📅 $date → ${entries.map { it.habitId to it.habitName }}")
                             val habit = habitMap[result.habitId] ?: return@filter false
                             val statDate = LocalDate.parse(result.date)
                             val created = LocalDate.parse(habit.createdDate)
@@ -268,6 +270,7 @@ class HabitViewModel(
         currentMonth
             .flatMapLatest { month ->
                 habitRepository.getMonthlyStats(month)
+                    .map { it.distinctBy { result -> "${result.date}_${result.habitId}" } }
             }
             .stateIn(
                 viewModelScope,

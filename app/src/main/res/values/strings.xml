@@ -26,8 +26,8 @@
     <string name="failure_label_default">Failed habits</string>
     <string name="no_success">No Successed habits</string>
     <string name="no_failure">No Failed habits 🎉</string>
-    <string name="year_month_format">%2$d %1$s</string>
-    <string name="year_month_with_rate_format">%2$d %1$s · Success Rate: %3$d%%</string>
+    <string name="year_month_format">%2$d %1$d</string>
+    <string name="year_month_with_rate_format">%2$d %1$d · Success Rate: %3$d%%</string>
     <string name="success_goals_with_date">✅ %1$d/%2$d Successed Habits</string>
     <string name="success_goals_with_date_and_rate">✅ %1$d/%2$d Successed Habits (%3$s%%)</string>
     <string name="failed_goals_with_date">❌ %1$d/%2$d Failed Habits</string>

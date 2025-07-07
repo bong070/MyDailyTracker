@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 private const val DATASTORE_NAME = "user_prefs"
 val Context.dataStore by preferencesDataStore(name = DATASTORE_NAME)
@@ -48,6 +49,32 @@ class SettingsRepository(private val context: Context) {
     suspend fun setPremiumUser(isPremium: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferenceKeys.IS_PREMIUM_USER] = isPremium
+        }
+    }
+
+    val detailEntryCount: Flow<Int> = context.dataStore.data.map { prefs ->
+        val today = LocalDate.now().toString()
+        val storedDate = prefs[PreferenceKeys.ENTRY_DATE]
+        val count = prefs[PreferenceKeys.ENTRY_COUNT] ?: 0
+
+        if (storedDate == today) count else 0
+    }
+
+    suspend fun incrementDetailEntryCount() {
+        context.dataStore.edit { prefs ->
+            val today = LocalDate.now().toString()
+            val storedDate = prefs[PreferenceKeys.ENTRY_DATE]
+            val currentCount = if (storedDate == today) prefs[PreferenceKeys.ENTRY_COUNT] ?: 0 else 0
+
+            prefs[PreferenceKeys.ENTRY_DATE] = today
+            prefs[PreferenceKeys.ENTRY_COUNT] = currentCount + 1
+        }
+    }
+
+    suspend fun resetDetailEntryCount() {
+        context.dataStore.edit { prefs ->
+            prefs[PreferenceKeys.ENTRY_DATE] = LocalDate.now().toString()
+            prefs[PreferenceKeys.ENTRY_COUNT] = 0
         }
     }
 }

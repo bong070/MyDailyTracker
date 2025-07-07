@@ -44,6 +44,7 @@ class AlarmActivity : ComponentActivity() {
 
     // 뒤로가기 버튼도 알람 종료로 처리
     override fun onBackPressed() {
+        super.onBackPressed()
         stopService(Intent(this, AlarmService::class.java))
         finishAffinity()
     }

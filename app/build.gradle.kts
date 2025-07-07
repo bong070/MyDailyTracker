@@ -75,7 +75,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.1")
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
-    implementation("com.android.billingclient:billing-ktx:6.2.1")
+    implementation("com.android.billingclient:billing:6.2.1")
     kapt(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

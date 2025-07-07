@@ -1,13 +1,15 @@
 package com.bbks.mydailytracker
 
+import android.app.AlarmManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.draw.clip
+import androidx.core.app.NotificationManagerCompat
+import android.provider.Settings
 
 @Composable
 fun SettingsDialog(
@@ -89,7 +93,7 @@ fun SettingsDialog(
                 val dialogBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
                 val borderColor = MaterialTheme.colorScheme.outline
 
-                /*OutlinedButton(
+                OutlinedButton(
                     onClick = {}, // 눌림 없음
                     enabled = false,
                     modifier = Modifier
@@ -116,10 +120,37 @@ fun SettingsDialog(
                         )
                         Switch(
                             checked = alarmEnabled,
-                            onCheckedChange = { viewModel.setAlarmEnabled(it) }
+                            onCheckedChange = { isChecked ->
+                                if (isChecked) {
+                                    val notificationManager = NotificationManagerCompat.from(context)
+                                    if (!notificationManager.areNotificationsEnabled()) {
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.notification_blocked_warning),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                        }
+                                        context.startActivity(intent)
+
+                                        return@Switch
+                                    }
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                        if (!alarmManager.canScheduleExactAlarms()) {
+                                            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                            context.startActivity(intent)
+                                        }
+                                    }
+                                }
+                                viewModel.setAlarmEnabled(isChecked)
+                            }
                         )
                     }
-                }*/
+                }
 
                 Button(
                     onClick = { showResetConfirmDialog = true },
