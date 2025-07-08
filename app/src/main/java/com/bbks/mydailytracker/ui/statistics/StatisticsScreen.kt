@@ -667,7 +667,7 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
                                     when {
                                         date == null -> Color.Transparent
                                         //selectedDate == date -> Color(0xFF4CAF50)
-                                        else -> getColorForSuccessRate(rate)
+                                        else -> getColorForSuccessRate(rate, isDark)
                                     }
                                 )
                                 .clickable(enabled = date != null) {
@@ -769,9 +769,10 @@ fun MonthlyStatsScreen(viewModel: HabitViewModel, modifier: Modifier = Modifier)
     }
 }
 
-fun getColorForSuccessRate(rate: Int?): Color {
+fun getColorForSuccessRate(rate: Int?,isDark: Boolean = false): Color {
     return when {
-        rate == null -> Color(0xFF757575)
+        rate == null || rate == 0 ->
+            if (isDark) Color(0xFF757575) else Color(0xFFE0E0E0)
         rate == 0 -> Color(0xFF757575)
         rate in 1..25 -> Color(0xFFE57373)
         rate in 26..50 -> Color(0xFFFFAB91)

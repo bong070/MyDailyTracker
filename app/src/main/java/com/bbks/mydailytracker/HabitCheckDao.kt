@@ -16,4 +16,7 @@ interface HabitCheckDao {
 
     @Update
     suspend fun updateHabitCheck(check: HabitCheck)
+
+    @Query("SELECT * FROM HabitCheck WHERE date = :date")
+    suspend fun getChecksForDate(date: String): List<HabitCheck>
 }

@@ -1,6 +1,7 @@
 package com.bbks.mydailytracker
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +12,8 @@ private const val DATASTORE_NAME = "user_prefs"
 val Context.dataStore by preferencesDataStore(name = DATASTORE_NAME)
 
 class SettingsRepository(private val context: Context) {
+
+    val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
         UserPreferences(
@@ -77,4 +80,13 @@ class SettingsRepository(private val context: Context) {
             prefs[PreferenceKeys.ENTRY_COUNT] = 0
         }
     }
+
+    suspend fun setFirstLaunchDone() {
+        context.dataStore.edit { prefs ->
+            prefs[IS_FIRST_LAUNCH] = false
+        }
+    }
+
+    val isFirstLaunch: Flow<Boolean> = context.dataStore.data
+        .map { prefs -> prefs[IS_FIRST_LAUNCH] ?: true }
 }

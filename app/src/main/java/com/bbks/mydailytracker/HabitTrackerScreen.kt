@@ -44,6 +44,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -64,6 +65,25 @@ fun HabitTrackerScreen(
     val endTime by viewModel.endTime.collectAsState(initial = LocalTime.of(0, 0, 0))
     val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val completedCount = habitChecks.values.count { it.date == todayString && it.isCompleted}
+    val showOnboarding by viewModel.isFirstLaunch.collectAsState()
+
+    if (showOnboarding) {
+        AlertDialog(
+            onDismissRequest = { viewModel.setFirstLaunchDone() },
+            confirmButton = {
+                TextButton(onClick = { viewModel.setFirstLaunchDone() }) {
+                    Text(stringResource(R.string.onboarding_start))
+                }
+            },
+            title = { Text(stringResource(R.string.onboarding_title)) },
+            text = {
+                Text(stringResource(R.string.onboarding_body), style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp))
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    }
 
     var newHabitName by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
@@ -225,7 +245,7 @@ fun HabitTrackerScreen(
                                                 onNavigateToDetail(habit.id)
                                             },
                                             onFail = {
-                                                Toast.makeText(context, "광고를 불러오지 못했어요.", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, context.getString(R.string.ads_unavailable), Toast.LENGTH_SHORT).show()
                                             },
                                             onUpgradeClick = {
                                                 onUpgradeClick()

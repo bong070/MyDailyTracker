@@ -36,6 +36,8 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, true)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
 
+
+        // TODO: v1.1부터는 fallbackToDestructiveMigration 제거하고 마이그레이션 정의할 것
         val db = Room.databaseBuilder(
             applicationContext,
             HabitDatabase::class.java,
@@ -57,7 +59,8 @@ class MainActivity : ComponentActivity() {
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
         MobileAds.initialize(this) {}
-        rewardedAdController = RewardedAdController(this, "ca-app-pub-3940256099942544/5224354917")
+        //rewardedAdController = RewardedAdController(this, "ca-app-pub-3940256099942544/5224354917") 테스트용
+        rewardedAdController = RewardedAdController(this, "ca-app-pub-7350776421233026/7085582206")
         rewardedAdController.loadAd()
 
         setContent {
@@ -101,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("detail/$habitId")
                                     },
                                     onUpgradeClick = {
-                                        navController.navigate("locked") // ✅ 여기서 정의해서 전달
+                                        navController.navigate("locked")
                                     }
                                 )
                             }

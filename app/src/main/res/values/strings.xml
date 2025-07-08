@@ -71,16 +71,28 @@
     <string name="go_to_settings">Go to Settings</string>
 
     <!-- Premium -->
-    <string name="premium_feature_locked">This feature is available for premium users only.</string>
-    <string name="free_trial_info">Try Premium Free for 7 Days</string>
+    <string name="premium_title">Premium Feature</string>
+    <string name="premium_description">This feature is available to premium users only.</string>
+    <string name="premium_benefit_no_ads">• Remove Ads</string>
+    <string name="premium_benefit_unlimited_detail">• Unlimited access to habit details</string>
+    <string name="premium_upgrade_button">Upgrade</string>
+    <string name="premium_benefit_stats">• Unlimited access to statistics screen</string>
+    <string name="back_button_description">Back</string>
     <string name="ad_notice_message"><b>%1$s</b> %2$s</string>
     <string name="ad_notice_bold">Daily access limit (2) has been reached.</string>
     <string name="ad_notice_rest">Watch the ad to continue to the detail setting screen.</string>
     <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="premium_preview_description">Premium Preview</string>
+    <string name="ads_unavailable">Failed to load the ad. Please try again.</string>
 
     <!-- Others -->
     <string name="loading">Loading...</string>
     <string name="save">Save</string>
     <string name="config">Config</string>
     <string name="watch_ad">Watch Ads</string>
+    <string name="afternoon_notification">Half the day is over! Why not check off at least one habit?</string>
+    <string name="evening_notification">Before the day ends, take a moment to review your habits!</string>
+    <string name="onboarding_title">Welcome!</string>
+    <string name="onboarding_body">Track your daily habits\nand see your consistency at a glance.\nAfter adding a new habit, you can set alarms and repeating days by clicking habit.\nLong-press habits to reorder them.\nThe statistics page shows weekly/monthly stats.</string>
+    <string name="onboarding_start">Get Started</string>
 </resources>
