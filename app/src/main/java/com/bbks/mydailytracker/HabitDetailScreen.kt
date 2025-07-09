@@ -109,6 +109,16 @@ fun HabitDetailScreen(
             habit.alarmHour != timePickerState.value.hour ||
             habit.alarmMinute != timePickerState.value.minute
 
+    val dayLabels = listOf(
+        R.string.day_mon_short,
+        R.string.day_tue_short,
+        R.string.day_wed_short,
+        R.string.day_thu_short,
+        R.string.day_fri_short,
+        R.string.day_sat_short,
+        R.string.day_sun_short,
+    )
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -192,6 +202,36 @@ fun HabitDetailScreen(
                             .padding(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        dayLabels.forEachIndexed { index, labelRes ->
+                            val day = daysOfWeek[index]
+                            val isSelected = selectedDays.contains(day.value)
+
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = {
+                                    if (isSelected) selectedDays.remove(day.value)
+                                    else selectedDays.add(day.value)
+                                },
+                                label = {
+                                    Text(
+                                        text = stringResource(id = labelRes),
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = if (isSelected) Color.White else Color.Black
+                                    )
+                                },
+                                leadingIcon = null,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(36.dp),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = if (isSelected) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
+                                    selectedContainerColor = Color(0xFF4CAF50)
+                                )
+                            )
+                        }
+                    }/*{
                         daysOfWeek.forEach { day ->
                             val isSelected = selectedDays.contains(day.value)
                             FilterChip(
@@ -219,7 +259,7 @@ fun HabitDetailScreen(
                                 )
                             )
                         }
-                    }
+                    }*/
 
                     Spacer(Modifier.height(12.dp))
                     Divider(thickness = 1.dp, color = Color.Gray.copy(alpha = 0.3f))

@@ -98,6 +98,7 @@ class AlarmService : Service() {
         mediaPlayer = MediaPlayer().apply {
             setAudioStreamType(AudioManager.STREAM_ALARM)
             val afd = resources.openRawResourceFd(R.raw.alarm_sound)
+            //val afd = resources.openRawResourceFd(R.raw.alarm_sound_debug) 디버그용
             setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             afd.close()
             prepare()

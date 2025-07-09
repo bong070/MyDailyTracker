@@ -213,8 +213,11 @@ class HabitViewModel(
 
     fun reorderHabits(fromIndex: Int, toIndex: Int) {
         val currentList = sortedHabits.value.toMutableList()
+        if (fromIndex !in currentList.indices) return
+
+        val safeToIndex = toIndex.coerceIn(0, currentList.size - 1)
         val habit = currentList.removeAt(fromIndex)
-        currentList.add(toIndex, habit)
+        currentList.add(safeToIndex, habit)
 
         viewModelScope.launch {
             currentList.forEachIndexed { index, updatedHabit ->

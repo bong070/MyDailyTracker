@@ -85,4 +85,11 @@
     <string name="onboarding_title">¡Bienvenido!</string>
     <string name="onboarding_body">Registra tus hábitos diarios\ny observa tu constancia fácilmente.\nDespués de agregar un nuevo objetivo, puedes configurar alarmas y días repetitivos.\nMantén presionado un objetivo para cambiar su orden.\nLa página de estadísticas muestra estadísticas semanales y mensuales.</string>
     <string name="onboarding_start">Comenzar</string>
+    <string name="day_mon_short">L</string> <!-- Lunes -->
+    <string name="day_tue_short">M</string> <!-- Martes -->
+    <string name="day_wed_short">X</string> <!-- Miércoles -->
+    <string name="day_thu_short">J</string> <!-- Jueves -->
+    <string name="day_fri_short">V</string> <!-- Viernes -->
+    <string name="day_sat_short">S</string> <!-- Sábado -->
+    <string name="day_sun_short">D</string> <!-- Domingo -->
 </resources>
