@@ -2,6 +2,7 @@ package com.bbks.mydailytracker
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.app.ActivityCompat
@@ -13,7 +14,7 @@ import com.google.android.gms.ads.MobileAds
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.bbks.mydailytracker.ui.statistics.StatisticsScreen
+import com.bbks.mydailytracker.ui.screen.StatisticsScreen
 import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -24,6 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.sqlite.db.SimpleSQLiteQuery
+import com.bbks.mydailytracker.billing.BillingLauncher
+import com.bbks.mydailytracker.data.db.HabitDatabase
+import com.bbks.mydailytracker.data.repository.HabitRepository
+import com.bbks.mydailytracker.data.repository.SettingsRepository
+import com.bbks.mydailytracker.domain.viewmodel.HabitViewModel
+import com.bbks.mydailytracker.domain.viewmodel.HabitViewModelFactory
+import com.bbks.mydailytracker.ui.screen.HabitDetailScreen
+import com.bbks.mydailytracker.ui.screen.HabitTrackerScreen
+import com.bbks.mydailytracker.ui.screen.LockedContentScreen
+import com.bbks.mydailytracker.util.RewardedAdController
 
 class MainActivity : ComponentActivity() {
 
@@ -33,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, true)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
 
 
@@ -59,7 +70,7 @@ class MainActivity : ComponentActivity() {
         viewModel = ViewModelProvider(this, factory)[HabitViewModel::class.java]
 
         MobileAds.initialize(this) {}
-        //rewardedAdController = RewardedAdController(this, "ca-app-pub-3940256099942544/5224354917") 테스트용
+        //rewardedAdController = RewardedAdController(this, "ca-app-pub-2864557421723275/4196668759") //테스트용
         rewardedAdController = RewardedAdController(this, "ca-app-pub-7350776421233026/7085582206")
         rewardedAdController.loadAd()
 
@@ -167,5 +178,21 @@ class MainActivity : ComponentActivity() {
                 Log.e("DB", "❌ WAL 병합 실패: ${e.localizedMessage}")
             }
         }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemUI()
+    }
+
+    private fun hideSystemUI() {
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
     }
 }

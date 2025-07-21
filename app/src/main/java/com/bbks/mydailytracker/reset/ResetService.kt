@@ -4,8 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.bbks.mydailytracker.HabitDatabase
-import com.bbks.mydailytracker.HabitRepository
+import com.bbks.mydailytracker.data.db.HabitDatabase
+import com.bbks.mydailytracker.data.repository.HabitRepository
+import com.bbks.mydailytracker.domain.usecase.HabitResetLogic
 import com.bbks.mydailytracker.util.ResetLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ class ResetService : Service() {
             val habitRepo = HabitRepository(
                 db.habitDao(), db.habitCheckDao(), db.dailyHabitResultDao()
             )
-            val resetLogic = com.bbks.mydailytracker.HabitResetLogic(applicationContext, habitRepo)
+            val resetLogic = HabitResetLogic(applicationContext, habitRepo)
             resetLogic.executeReset()
             db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL);")
             ResetLogger.logResetTime(applicationContext)

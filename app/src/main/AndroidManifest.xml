@@ -35,7 +35,7 @@
         </activity>
 
         <activity
-            android:name=".AlarmActivity"
+            android:name=".alarm.AlarmActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:showWhenLocked="true"
@@ -48,13 +48,13 @@
             android:value="ca-app-pub-7350776421233026~1695049951"/>
 
         <receiver
-            android:name=".AlarmReceiver"
+            android:name=".alarm.AlarmReceiver"
             android:exported="true"
             android:permission="android.permission.BROADCAST_ALARM" />
 
-        <receiver android:name=".NotificationReceiver" android:exported="false" />
+        <receiver android:name=".alarm.NotificationReceiver" android:exported="false" />
         <receiver
-            android:name=".BootReceiver"
+            android:name=".util.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -62,17 +62,17 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".HabitResetReceiver"
+            android:name=".reset.HabitResetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".AlarmStopReceiver" android:exported="false" />
+        <receiver android:name=".alarm.AlarmStopReceiver" android:exported="false" />
 
         <service
-            android:name=".AlarmService"
+            android:name=".alarm.AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
         <service android:name=".reset.ResetService" android:exported="false" />
