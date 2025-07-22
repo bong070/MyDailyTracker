@@ -249,7 +249,7 @@ fun WeeklyStatsScreen(viewModel: HabitViewModel) {
     val selectedWeekRange = currentStartOfWeek..endOfWeek
     val stats by viewModel.getWeekStatsForUI().collectAsState()
     val filteredStats = stats.filter { it.date in selectedWeekRange }
-    val selectedDayIndex = selectedDay.coerceAtMost(stats.lastIndex)
+    val selectedDayIndex = selectedDay.coerceAtMost(filteredStats.lastIndex)
     val selectedStats = filteredStats.getOrNull(selectedDayIndex)
 
     val successColor = MaterialTheme.colorScheme.primary

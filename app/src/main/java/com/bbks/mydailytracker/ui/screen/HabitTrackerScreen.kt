@@ -256,6 +256,7 @@ fun HabitTrackerScreen(
                                             },
                                             onFail = {
                                                 Toast.makeText(context, context.getString(R.string.ads_unavailable), Toast.LENGTH_SHORT).show()
+                                                onNavigateToDetail(habit.id)
                                             },
                                             onUpgradeClick = {
                                                 onUpgradeClick()

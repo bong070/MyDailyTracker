@@ -50,7 +50,7 @@ class HabitRepository(
     }
 
     fun getWeeklyStats(): Flow<List<DailyHabitResult>> {
-        val startDate = LocalDate.now().minusDays(6).toString() // 최근 7일 포함
+        val startDate = LocalDate.now().minusYears(1).toString() // 최근 7일 포함
         return resultDao.getResultsFrom(startDate)
     }
 
