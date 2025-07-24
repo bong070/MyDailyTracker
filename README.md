@@ -29,15 +29,7 @@ Track your daily goals, build streaks, and visualize your progress.
 - **Alarm**: AlarmManager + BroadcastReceiver + ForegroundService
 - **Ads**: Google AdMob (excluded in this version)
 - **IAP**: Google Play Billing (excluded in this version)
-
----
-
-## 🚫 What's Not Included in Public Repo
-
-- Premium feature logic (ads, purchase validation)
-- Actual AdMob and Billing integration
-- API keys or private credentials
-
+  
 ---
 
 ## 📦 Installation
