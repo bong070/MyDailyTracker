@@ -4,7 +4,6 @@ A simple yet powerful habit tracking app built with Android and Jetpack Compose.
 Track your daily goals, build streaks, and visualize your progress.
 
 > ⚠️ **Note:** This repository is public **only during the hiring process** and will be made private again after **August 15, 2025**.  
-> Premium logic and in-app purchase features have been excluded from this public version.
 
 ---
 
