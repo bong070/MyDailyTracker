@@ -1,5 +1,6 @@
 package com.bbks.mydailytracker.ui.screen
 
+import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.bbks.mydailytracker.ui.component.AdMobBanner
 import com.bbks.mydailytracker.alarm.AlarmHelper
 import com.bbks.mydailytracker.R
@@ -111,6 +115,7 @@ fun HabitTrackerScreen(
     val context = LocalContext.current
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val entryCount by viewModel.detailEntryCount.collectAsState()
+    val activity = context as? Activity
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -176,6 +181,7 @@ fun HabitTrackerScreen(
                             viewModel.addHabit(newHabitName)
                             newHabitName = ""
                             keyboardController?.hide()
+                            activity?.let { hideSystemBars(it) }
                         }
                     },
                     shape = RoundedCornerShape(50),
@@ -451,4 +457,12 @@ fun calculateRemainingTime(endTime: LocalTime): String {
     val minutes = duration.toMinutes() % 60
     val seconds = duration.seconds % 60
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+}
+
+fun hideSystemBars(activity: Activity) {
+    WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+    WindowInsetsControllerCompat(activity.window, activity.window.decorView).apply {
+        hide(WindowInsetsCompat.Type.systemBars())
+        systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
 }

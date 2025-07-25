@@ -92,4 +92,5 @@
     <string name="day_fri_short">V</string> <!-- Viernes -->
     <string name="day_sat_short">S</string> <!-- Sábado -->
     <string name="day_sun_short">D</string> <!-- Domingo -->
+    <string name="repeating_days">🔁 Días de repetición</string>
 </resources>

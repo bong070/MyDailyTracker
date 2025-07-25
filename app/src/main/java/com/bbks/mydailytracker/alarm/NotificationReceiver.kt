@@ -2,6 +2,7 @@ package com.bbks.mydailytracker.alarm
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -30,6 +31,17 @@ class NotificationReceiver : BroadcastReceiver() {
         } else {
             context.getString(R.string.evening_notification)
         }
+
+        val clickIntent = Intent(context, Class.forName("com.bbks.mydailytracker.MainActivity")).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            clickIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
 
         // 알림 생성
         val notification = NotificationCompat.Builder(context, channelId)

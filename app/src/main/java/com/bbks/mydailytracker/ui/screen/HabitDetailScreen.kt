@@ -28,6 +28,7 @@ import android.provider.Settings
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.R.attr.text
 import android.app.NotificationManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -199,7 +200,7 @@ fun HabitDetailScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
 
-                        Text("🔁 반복 요일", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
+                        Text(text = stringResource(R.string.repeating_days), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.height(12.dp))
                         Row(
                             modifier = Modifier

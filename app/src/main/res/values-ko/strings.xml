@@ -13,6 +13,7 @@
     <!-- Habit Detail -->
     <string name="notes">📝 메모</string>
     <string name="notes_ins">최대 5줄까지 입력할 수 있어요</string>
+    <string name="repeating_days">🔁 반복 요일</string>
 
     <!-- Statistics -->
     <string name="statistics">통계</string>

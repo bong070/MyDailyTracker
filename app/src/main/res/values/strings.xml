@@ -13,6 +13,7 @@
     <!-- Habit Detail -->
     <string name="notes">📝 Note</string>
     <string name="notes_ins">Maximum 5 lines are allowed</string>
+    <string name="repeating_days">🔁 Repeat Days</string>
 
     <!-- Statistics -->
     <string name="statistics">Statistics</string>

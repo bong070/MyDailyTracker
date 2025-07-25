@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.bbks.mydailytracker.R
+import java.util.Locale
 
 @Composable
 fun LockedContentScreen(
@@ -99,6 +100,13 @@ fun LockedContentScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            val locale = Locale.getDefault().language
+            val imageRes = when (locale) {
+                "ko" -> R.drawable.stats_kr
+                "ja" -> R.drawable.stats_ja
+                else -> R.drawable.stats
+            }
+
             // 통계 미리보기 이미지 (카드 스타일)
             Box(
                 modifier = Modifier
@@ -108,7 +116,7 @@ fun LockedContentScreen(
                     .background(Color(0xFFFFF1CD))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.stats),
+                    painter = painterResource(id = imageRes),
                     contentDescription = stringResource(R.string.premium_preview_description),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier

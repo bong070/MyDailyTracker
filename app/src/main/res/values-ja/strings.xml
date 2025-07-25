@@ -92,4 +92,5 @@
     <string name="day_fri_short">金</string>
     <string name="day_sat_short">土</string>
     <string name="day_sun_short">日</string>
+    <string name="repeating_days">🔁 繰り返し曜日</string>
 </resources>
