@@ -45,7 +45,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-7350776421233026~1695049951"/>
+            android:value="ca-app-pub-2864557421723275~4892154394"/>
 
         <receiver
             android:name=".alarm.AlarmReceiver"

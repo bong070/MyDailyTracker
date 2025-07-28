@@ -21,7 +21,6 @@ class ResetService : Service() {
             )
             val resetLogic = HabitResetLogic(applicationContext, habitRepo)
             resetLogic.executeReset()
-            db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL);")
             ResetLogger.logResetTime(applicationContext)
             ResetLogger.log(applicationContext, "ResetService executeReset() 완료")
             ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)

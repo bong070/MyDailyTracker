@@ -49,6 +49,8 @@ class NotificationReceiver : BroadcastReceiver() {
             .setContentTitle("My Daily Tracker")
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
