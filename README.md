@@ -36,4 +36,4 @@ Track your daily goals, build streaks, and visualize your progress.
 Clone the repo and open in Android Studio:
 
 ```bash
-git clone https://github.com/bong070/my-daily-tracker-lite.git
+git clone https://github.com/bong070/MyDailyTracker.git
