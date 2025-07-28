@@ -24,10 +24,10 @@ Track your daily goals, build streaks, and visualize your progress.
 - **Language**: Kotlin
 - **UI Framework**: Jetpack Compose
 - **Architecture**: MVVM + Repository
-- **Persistence**: Room (SQLite)
+- **Persistence**: Room
 - **Alarm**: AlarmManager + BroadcastReceiver + ForegroundService
-- **Ads**: Google AdMob (excluded in this version)
-- **IAP**: Google Play Billing (excluded in this version)
+- **Ads**: Google AdMob
+- **IAP**: Google Play Billing
   
 ---
 
