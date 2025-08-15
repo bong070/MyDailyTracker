@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bbks.mydailytracker.R
 import java.time.LocalTime
@@ -54,5 +55,6 @@ class NotificationReceiver : BroadcastReceiver() {
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        Log.d("NotificationReceiver", "🔔 알림 수신 - 생성 중")
     }
 }

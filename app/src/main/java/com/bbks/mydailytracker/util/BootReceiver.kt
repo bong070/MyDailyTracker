@@ -3,6 +3,7 @@ package com.bbks.mydailytracker.util
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.bbks.mydailytracker.alarm.AlarmHelper
 import com.bbks.mydailytracker.reset.ResetAlarmHelper
 
@@ -11,6 +12,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
             AlarmHelper.scheduleDailyAlarms(context)
             ResetAlarmHelper.scheduleDailyResetAlarm(context)
+            Log.d("BootReceiver", "📦 BOOT_COMPLETED 수신 - 알람 등록 시도")
         }
     }
 }
