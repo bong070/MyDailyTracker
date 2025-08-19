@@ -59,7 +59,7 @@
     <string name="sort_incompleted_first">未完了を先に</string>
     <string name="sort_manual">手動</string>
     <string name="alarm_stop">アラーム停止</string>
-    <string name="alarm_on">アラームON</string>
+    <string name="alarm_on">アラームが鳴っています！アプリを開くか、通知をタップまたはスワイプして止めてください。</string>
     <string name="notification_blocked_warning">通知がブロックされています</string>
     <string name="go_to_settings">通知を有効にしてください</string>
     <string name="premium_title">プレミアム機能</string>
@@ -93,4 +93,5 @@
     <string name="day_sat_short">土</string>
     <string name="day_sun_short">日</string>
     <string name="repeating_days">🔁 繰り返し曜日</string>
+    <string name="alarm_volume">アラーム音量</string>
 </resources>

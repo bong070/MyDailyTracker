@@ -27,6 +27,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.draw.clip
 import androidx.core.app.NotificationManagerCompat
 import android.provider.Settings
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import com.bbks.mydailytracker.R
 import com.bbks.mydailytracker.domain.viewmodel.HabitViewModel
 import com.bbks.mydailytracker.ui.screen.cancelAllAlarms
@@ -49,6 +53,7 @@ fun SettingsDialog(
     }
 
     var showResetConfirmDialog by remember { mutableStateOf(false) }
+    val alarmVolume by viewModel.alarmVolume.collectAsState()
 
     if (showResetConfirmDialog) {
         AlertDialog(
@@ -159,6 +164,55 @@ fun SettingsDialog(
                                 viewModel.setAlarmEnabled(isChecked)
                             }
                         )
+                    }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = stringResource(R.string.alarm_volume),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    // 타원형 Outline 버튼 안에 슬라이더 + 아이콘
+                    OutlinedButton(
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = dialogBackground,
+                            disabledContainerColor = dialogBackground,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        border = BorderStroke(1.dp, borderColor),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeOff,
+                                contentDescription = "Mute",
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                            Slider(
+                                value = alarmVolume,
+                                onValueChange = { viewModel.setAlarmVolume(it) },
+                                modifier = Modifier.weight(1f),
+                                valueRange = 0f..1f,
+                                steps = 9,
+                                enabled = alarmEnabled
+                            )
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Max Volume",
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                        }
                     }
                 }
 

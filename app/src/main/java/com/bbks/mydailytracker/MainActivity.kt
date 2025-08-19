@@ -1,5 +1,6 @@
 package com.bbks.mydailytracker
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.sqlite.db.SimpleSQLiteQuery
+import com.bbks.mydailytracker.alarm.AlarmService
 import com.bbks.mydailytracker.billing.BillingLauncher
 import com.bbks.mydailytracker.data.db.HabitDatabase
 import com.bbks.mydailytracker.data.repository.HabitRepository
@@ -35,6 +37,7 @@ import com.bbks.mydailytracker.ui.screen.HabitDetailScreen
 import com.bbks.mydailytracker.ui.screen.HabitTrackerScreen
 import com.bbks.mydailytracker.ui.screen.LockedContentScreen
 import com.bbks.mydailytracker.util.RewardedAdController
+import kotlin.jvm.java
 
 class MainActivity : ComponentActivity() {
 
@@ -194,5 +197,15 @@ class MainActivity : ComponentActivity() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                 )
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (AlarmService.isRunningExternally) {
+            Log.d("Alarm", "앱 열림 → 알람 강제 종료 시도")
+            val intent = Intent(this, AlarmService::class.java)
+            stopService(intent)
+        }
     }
 }

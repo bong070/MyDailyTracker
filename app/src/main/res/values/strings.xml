@@ -40,6 +40,7 @@
     <string name="expand_less">Collapse list</string>
     <string name="success">Success</string>
     <string name="failure">Failure</string>
+    <string name="alarm_volume">Alarm Volume</string>
 
         <!-- Settings -->
     <string name="notification_permission_denied">Notification permission was denied</string>
@@ -67,7 +68,7 @@
     <string name="sort_incompleted_first">To do first</string>
     <string name="sort_manual">Manual</string>
     <string name="alarm_stop">Stop Alarm</string>
-    <string name="alarm_on">Alarm is ON</string>
+    <string name="alarm_on">Alarm is ringing! Open the app, tap or swipe the notification to stop it.</string>
     <string name="notification_blocked_warning">Turn on Notifications first to enable Alarm</string>
     <string name="go_to_settings">Go to Settings</string>
 

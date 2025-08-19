@@ -27,7 +27,8 @@ class SettingsRepository(private val context: Context) {
             sortOption = SortOption.valueOf(
                 prefs[PreferenceKeys.SORT_OPTION] ?: SortOption.ALPHABETICAL.name
             ),
-            isPremiumUser = prefs[PreferenceKeys.IS_PREMIUM_USER] ?: false
+            isPremiumUser = prefs[PreferenceKeys.IS_PREMIUM_USER] ?: false,
+            alarmVolume = prefs[PreferenceKeys.ALARM_VOLUME] ?: 0.5f // ✅ 추가된 필드
         )
     }
 
@@ -94,4 +95,10 @@ class SettingsRepository(private val context: Context) {
 
     val isFirstLaunch: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[IS_FIRST_LAUNCH] ?: true }
+
+    suspend fun updateAlarmVolume(value: Float) {
+        context.dataStore.edit { prefs ->
+            prefs[PreferenceKeys.ALARM_VOLUME] = value
+        }
+    }
 }

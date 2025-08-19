@@ -59,7 +59,7 @@
     <string name="sort_incompleted_first">Incompletos primero</string>
     <string name="sort_manual">Manual</string>
     <string name="alarm_stop">Detener alarma</string>
-    <string name="alarm_on">Alarma activada</string>
+    <string name="alarm_on">¡La alarma está sonando! Abre la app, toca o desliza la notificación para detenerla.</string>
     <string name="notification_blocked_warning">La notificación está bloqueada</string>
     <string name="go_to_settings">Activa las notificaciones para habilitar la alarma</string>
     <string name="premium_title">Función Premium</string>
@@ -93,4 +93,5 @@
     <string name="day_sat_short">S</string> <!-- Sábado -->
     <string name="day_sun_short">D</string> <!-- Domingo -->
     <string name="repeating_days">🔁 Días de repetición</string>
+    <string name="alarm_volume">Volumen de la alarma</string>
 </resources>

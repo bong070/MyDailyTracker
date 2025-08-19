@@ -3,6 +3,7 @@ package com.bbks.mydailytracker.util
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 
 object PreferenceKeys {
     val END_HOUR = intPreferencesKey("end_hour")
@@ -13,4 +14,5 @@ object PreferenceKeys {
     val IS_PREMIUM_USER = booleanPreferencesKey("is_premium_user")
     val ENTRY_DATE = stringPreferencesKey("entry_date")
     val ENTRY_COUNT = intPreferencesKey("entry_count")
+    val ALARM_VOLUME = floatPreferencesKey("alarm_volume")
 }

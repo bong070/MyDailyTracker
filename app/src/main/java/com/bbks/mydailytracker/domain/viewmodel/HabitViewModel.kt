@@ -132,6 +132,7 @@ class HabitViewModel(
                 _autoDelete.value = prefs.autoDelete
                 _sortOption.value = prefs.sortOption
                 _isPremiumUser.value = prefs.isPremiumUser
+                _alarmVolume.value = prefs.alarmVolume
             }
         }
     }
@@ -338,5 +339,15 @@ class HabitViewModel(
 
     fun overridePremiumUserForDebug(value: Boolean) {
         _isPremiumUser.value = value // 그냥 메모리에서만 세팅
+    }
+
+    private val _alarmVolume = MutableStateFlow(0.5f)
+    val alarmVolume: StateFlow<Float> = _alarmVolume
+
+    fun setAlarmVolume(value: Float) {
+        _alarmVolume.value = value
+        viewModelScope.launch {
+            settingsRepository.updateAlarmVolume(value)
+        }
     }
 }

@@ -8,7 +8,7 @@ import com.bbks.mydailytracker.alarm.AlarmService
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val habitTitle = intent.getStringExtra("habitTitle") ?: "알람이 울리고 있어요!"
+        val habitTitle = intent.getStringExtra("habitTitle") ?: "Alarm is on!"
         val habitId = intent.getIntExtra("habitId", -1)
         val dayOfWeek = intent.getIntExtra("dayOfWeek", -1)
         val serviceIntent = Intent(context, AlarmService::class.java).apply {
