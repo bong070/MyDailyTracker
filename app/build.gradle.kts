@@ -13,8 +13,8 @@ android {
         applicationId = "com.bbks.mydailytracker"
         minSdk = 24
         targetSdk = 35
-        versionCode = 20
-        versionName = "0.10.0"
+        versionCode = 22
+        versionName = "0.10.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
