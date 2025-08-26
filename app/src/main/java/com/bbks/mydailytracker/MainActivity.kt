@@ -124,18 +124,10 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("statistics") {
-                                if (isPremiumUser) {
-                                    StatisticsScreen(
-                                        navController = navController,
-                                        viewModel = viewModel
-                                    )
-                                } else {
-                                    LaunchedEffect(Unit) {
-                                        navController.navigate("locked") {
-                                            popUpTo("statistics") { inclusive = true }
-                                        }
-                                    }
-                                }
+                                StatisticsScreen(
+                                    navController = navController,
+                                    viewModel = viewModel
+                                )
                             }
 
                             composable("detail/{habitId}") { backStackEntry ->

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import com.bbks.mydailytracker.R
 import java.time.LocalTime
 import java.util.Calendar
 
@@ -41,11 +42,11 @@ object HabitResetScheduler {
                         pendingIntent
                     )
                 } catch (e: SecurityException) {
-                    Toast.makeText(context, "정확한 알람 권한이 필요합니다.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.alarm_permission_required), Toast.LENGTH_LONG).show()
                     e.printStackTrace()
                 }
             } else {
-                Toast.makeText(context, "정확한 알람 권한이 꺼져 있습니다.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.alarm_permission_disabled), Toast.LENGTH_LONG).show()
                 // 사용자가 설정에서 수동으로 허용해야 함
             }
         } else {

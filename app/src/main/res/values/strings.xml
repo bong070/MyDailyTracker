@@ -83,9 +83,14 @@
     <string name="ad_notice_message"><b>%1$s</b> %2$s</string>
     <string name="ad_notice_bold">Daily access limit (2) has been reached.</string>
     <string name="ad_notice_rest">Watch the ad to continue to the detail setting screen.</string>
+    <string name="ad_statsnotice_bold">Daily access limit (1) has been reached.</string>
+    <string name="ad_statsnotice_rest">Watch the ad to continue to the statistics screen.</string>
     <string name="upgrade_to_premium">Upgrade to Premium</string>
     <string name="premium_preview_description">Premium Preview</string>
-    <string name="ads_unavailable">Failed to load the ad. Please try again.</string>
+    <string name="ads_unavailable">No ads available, entering directly.</string>
+    <string name="alarm_permission_required">Exact alarm permission is required.</string>
+    <string name="alarm_permission_disabled">Exact alarm permission is disabled.</string>
+    <string name="alarm_permission_settings">Go to Settings &gt; Apps &gt; MyDailyTracker &gt; Allow notifications.</string>
 
     <!-- Others -->
     <string name="loading">Loading...</string>

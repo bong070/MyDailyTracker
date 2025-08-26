@@ -83,9 +83,14 @@
     <string name="premium_benefit_stats">• 통계 화면 무제한 접근</string>
     <string name="ad_notice_message"><b>%1$s</b> %2$s</string>
     <string name="ad_notice_bold">무료 진입 기회 (2회) 를 모두 사용하셨습니다.</string>
-    <string name="ad_notice_rest">광고를 시청하면 설정 화면으로 이동할 수 있어요.</string>
+    <string name="ad_notice_rest">광고를 시청하시면 설정 화면으로 이동할 수 있어요.</string>
+    <string name="ad_statsnotice_bold">무료 진입 기회 (1회) 를 모두 사용하셨습니다.</string>
+    <string name="ad_statsnotice_rest">광고를 시청하시면 통계 화면으로 이동할 수 있어요.</string>
     <string name="upgrade_to_premium">프리미엄 구매</string>
-    <string name="ads_unavailable">광고를 불러오지 못했어요. 다시 시도해 주세요.</string>
+    <string name="ads_unavailable">광고가 없어 바로 입장합니다.</string>
+    <string name="alarm_permission_required">정확한 알람 권한이 필요합니다.</string>
+    <string name="alarm_permission_disabled">정확한 알람 권한이 꺼져 있습니다.</string>
+    <string name="alarm_permission_settings">설정 &gt; 앱 &gt; MyDailyTracker &gt; 알림 허용이 필요합니다</string>
 
     <!-- Others -->
     <string name="loading">로딩중...</string>

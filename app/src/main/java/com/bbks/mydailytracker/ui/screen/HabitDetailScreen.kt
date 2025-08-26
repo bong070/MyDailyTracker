@@ -56,9 +56,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.NotificationManagerCompat
 import com.bbks.mydailytracker.alarm.AlarmReceiver
 import com.bbks.mydailytracker.R
+import com.bbks.mydailytracker.alarm.OneShotStore
 import com.bbks.mydailytracker.data.model.Habit
 import com.bbks.mydailytracker.data.model.alarmTime
 import com.bbks.mydailytracker.domain.viewmodel.HabitViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -472,6 +474,20 @@ fun scheduleWeeklyAlarms(context: Context, habitId: Int, hour: Int, minute: Int,
         })
     } else {
         repeatDays
+    }
+
+    if (repeatDays.isEmpty()) {
+        val now = java.util.Calendar.getInstance()
+        val at = (now.clone() as java.util.Calendar).apply {
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+            if (timeInMillis <= now.timeInMillis) add(java.util.Calendar.DAY_OF_YEAR, 7)
+        }.timeInMillis
+        kotlinx.coroutines.GlobalScope.launch {
+            OneShotStore.set(context.applicationContext, habitId, at)
+        }
     }
 
     for (day in actualRepeatDays) {

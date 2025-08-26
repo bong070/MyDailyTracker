@@ -73,8 +73,13 @@
     <string name="ad_notice_message"/>
     <string name="ad_notice_bold">Límite diario de acceso gratuito (2) alcanzado.</string>
     <string name="ad_notice_rest">Mira el anuncio para continuar a la configuración detallada.</string>
+    <string name="ad_statsnotice_bold">Se alcanzó el límite diario de accesos (1).</string>
+    <string name="ad_statsnotice_rest">Mira el anuncio para continuar a la pantalla de estadísticas.</string>
     <string name="upgrade_to_premium">Actualizar a Premium</string>
-    <string name="ads_unavailable">No se pudo cargar el anuncio. Por favor, inténtalo de nuevo.</string>
+    <string name="ads_unavailable">No hay anuncios disponibles, entrando directamente.</string>
+    <string name="alarm_permission_required">Se requiere el permiso de alarma exacta.</string>
+    <string name="alarm_permission_disabled">El permiso de alarma exacta está desactivado.</string>
+    <string name="alarm_permission_settings">Configuración &gt; Aplicaciones &gt; MyDailyTracker &gt; Permitir notificaciones.</string>
     <string name="loading">Cargando...</string>
     <string name="save">Guardar</string>
     <string name="config">Configuración</string>

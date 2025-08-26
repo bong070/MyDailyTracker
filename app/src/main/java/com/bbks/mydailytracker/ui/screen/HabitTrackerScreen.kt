@@ -20,6 +20,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -115,6 +116,7 @@ fun HabitTrackerScreen(
     val context = LocalContext.current
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val entryCount by viewModel.detailEntryCount.collectAsState()
+    val statsEntryCount by viewModel.statsEntryCount.collectAsState()
     val activity = context as? Activity
 
     Scaffold(
@@ -125,7 +127,31 @@ fun HabitTrackerScreen(
                 alarmEnabled = viewModel.alarmEnabled.collectAsState().value,
                 context = LocalContext.current,
                 onSettingsClick = { showSettings = true },
-                onStatsClick = onNavigateToStats
+                onStatsClick = {
+                    val remainingCount = 1 - statsEntryCount
+                    Log.d("GateDebug", "📊 statsEntryCount=$statsEntryCount → remainingCount=$remainingCount")
+                    if (isPremiumUser) {
+                        onNavigateToStats()
+                    } else if (remainingCount > 0) {
+                        viewModel.onStatsEntrySuccess()
+                        onNavigateToStats()
+                    } else {
+                        rewardedAdController.showStatsAd(
+                            onSuccess = {
+                                viewModel.onStatsEntrySuccess()
+                                onNavigateToStats()
+                            },
+                            onFail = {
+                                Toast.makeText(context, context.getString(R.string.ads_unavailable), Toast.LENGTH_SHORT).show()
+                                onNavigateToStats()
+                            },
+                            onUpgradeClick = {
+                                onUpgradeClick()
+                            },
+                            onCancel = {}
+                        )
+                    }
+                }
             )
         },
         bottomBar = {
@@ -249,6 +275,7 @@ fun HabitTrackerScreen(
                                 .animateContentSize()
                                 .clickable {
                                     val remainingCount = 2 - entryCount
+                                    Log.d("GateDebug", "📋 entryCount=$entryCount → remainingCount=$remainingCount")
                                     if (isPremiumUser) {
                                         onNavigateToDetail(habit.id)
                                     } else if (remainingCount > 0) {
@@ -266,7 +293,8 @@ fun HabitTrackerScreen(
                                             },
                                             onUpgradeClick = {
                                                 onUpgradeClick()
-                                            }
+                                            },
+                                            onCancel = {}
                                         )
                                     }
                                 },

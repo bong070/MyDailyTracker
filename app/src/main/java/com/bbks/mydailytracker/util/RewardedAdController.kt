@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StyleSpan
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.TextView
@@ -40,11 +41,39 @@ class RewardedAdController(
     fun showAd(
         onSuccess: () -> Unit,
         onFail: () -> Unit,
-        onUpgradeClick: () -> Unit
+        onUpgradeClick: () -> Unit,
+        onCancel: () -> Unit
     ) {
         val ad = rewardedAd
         if (ad != null) {
-            showLoadingDialog(onSuccess, onFail, onUpgradeClick)
+            showLoadingDialog(onSuccess, onFail, onUpgradeClick, false, onCancel)
+
+            // 광고 콜백 설정
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    rewardedAd = null
+                    loadAd()
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    dismissLoadingDialog()
+                    onFail()
+                }
+            }
+        } else {
+            onFail()
+        }
+    }
+
+    fun showStatsAd(
+        onSuccess: () -> Unit,
+        onFail: () -> Unit,
+        onUpgradeClick: () -> Unit,
+        onCancel: () -> Unit
+    ) {
+        val ad = rewardedAd
+        if (ad != null) {
+            showLoadingDialog(onSuccess, onFail, onUpgradeClick, true, onCancel)
 
             // 광고 콜백 설정
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
@@ -66,7 +95,9 @@ class RewardedAdController(
     private fun showLoadingDialog(
         onSuccess: () -> Unit,
         onFail: () -> Unit,
-        onUpgradeClick: () -> Unit
+        onUpgradeClick: () -> Unit,
+        isStats: Boolean = false,
+        onCancel: () -> Unit
     ) {
         if (loadingDialog?.isShowing == true) return
 
@@ -76,8 +107,12 @@ class RewardedAdController(
         val cancelButton = view.findViewById<Button>(R.id.ad_cancel_button)
         val premiumButton = view.findViewById<Button>(R.id.ad_premium_button)
 
-        val bold = activity.getString(R.string.ad_notice_bold)
-        val rest = activity.getString(R.string.ad_notice_rest)
+        var bold = activity.getString(R.string.ad_notice_bold)
+        var rest = activity.getString(R.string.ad_notice_rest)
+        if (isStats) {
+            bold = activity.getString(R.string.ad_statsnotice_bold)
+            rest = activity.getString(R.string.ad_statsnotice_rest)
+        }
         val spannable = SpannableStringBuilder("$bold\n$rest")
         spannable.setSpan(
             StyleSpan(Typeface.BOLD),
@@ -114,7 +149,15 @@ class RewardedAdController(
 
         cancelButton.setOnClickListener {
             loadingDialog?.dismiss()
-            onFail()
+            onCancel()
+        }
+
+        loadingDialog?.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                loadingDialog?.dismiss()
+                onCancel()
+                true
+            } else false
         }
 
         view.findViewById<Button>(R.id.ad_premium_button).setOnClickListener {

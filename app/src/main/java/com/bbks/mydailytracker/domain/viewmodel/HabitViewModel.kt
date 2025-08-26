@@ -64,6 +64,9 @@ class HabitViewModel(
     val detailEntryCount: StateFlow<Int> = settingsRepository.detailEntryCount
         .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), 0)
 
+    val statsEntryCount: StateFlow<Int> = settingsRepository.statsEntryCount
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), 0)
+
     val isFirstLaunch = settingsRepository.isFirstLaunch
         .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
 
@@ -77,6 +80,14 @@ class HabitViewModel(
         viewModelScope.launch {
             if (!isPremiumUser.value) {
                 settingsRepository.incrementDetailEntryCount()
+            }
+        }
+    }
+
+    fun onStatsEntrySuccess() {
+        viewModelScope.launch {
+            if (!isPremiumUser.value) {
+                settingsRepository.incrementStatsEntryCount()
             }
         }
     }

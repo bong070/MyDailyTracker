@@ -3,6 +3,7 @@ package com.bbks.mydailytracker.billing
 import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.LifecycleCoroutineScope
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
@@ -22,21 +23,26 @@ class BillingLauncher(
 ) {
     private lateinit var billingClient: BillingClient
 
+    companion object {
+        private const val PREMIUM_PRODUCT_ID = "premium_upgrade"
+    }
+
     fun setup() {
         billingClient = BillingClient.newBuilder(activity)
             .setListener { billingResult, purchases ->
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                    for (purchase in purchases) {
-                        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                            lifecycleScope.launch {
-                                setPremiumUser(true)
-                                refreshPreferences()
-                                onPurchaseComplete()
-                            }
+                when (billingResult.responseCode) {
+                    BillingClient.BillingResponseCode.OK -> {
+                        if (purchases != null) {
+                            handlePurchases(purchases)
+                        } else {
+                            refreshPremiumStatus()
                         }
                     }
-                } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
-                    onPurchaseCancelled()
+                    BillingClient.BillingResponseCode.USER_CANCELED -> onPurchaseCancelled()
+                    else -> {
+                        Log.w("Billing", "onPurchasesUpdated: ${billingResult.debugMessage}")
+                        refreshPremiumStatus()
+                    }
                 }
             }
             .enablePendingPurchases()
@@ -46,12 +52,11 @@ class BillingLauncher(
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     Log.d("Billing", "BillingClient 연결 성공")
+                    refreshPremiumStatus()
                 }
             }
 
-            override fun onBillingServiceDisconnected() {
-                Log.w("Billing", "BillingClient 연결 끊김")
-            }
+            override fun onBillingServiceDisconnected() {}
         })
     }
 
@@ -89,28 +94,42 @@ class BillingLauncher(
     }
 
     fun restorePurchase() {
-        billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
-                .setProductType(BillingClient.ProductType.INAPP)
-                .build()
-        ) { billingResult, purchasesList ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                val isPremiumPurchased = purchasesList.any { purchase ->
-                    purchase.products.contains("premium_upgrade") &&
-                            purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-                }
+        refreshPremiumStatus()
+    }
 
-                if (isPremiumPurchased) {
-                    lifecycleScope.launch {
-                        setPremiumUser(true)
-                        refreshPreferences()
-                        Log.d("Billing", "✅ 이전 구매 복원됨")
-                    }
-                } else {
-                    Log.d("Billing", "☑️ 프리미엄 구매 이력 없음")
+    private fun handlePurchases(purchases: List<Purchase>) {
+        val targets = purchases.filter { it.products.contains(PREMIUM_PRODUCT_ID) }
+        if (targets.isEmpty()) {
+            refreshPremiumStatus()
+            return
+        }
+        targets.forEach { p ->
+            if (p.purchaseState == Purchase.PurchaseState.PURCHASED && !p.isAcknowledged) {
+                val params = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(p.purchaseToken).build()
+                billingClient.acknowledgePurchase(params) {
+                    refreshPremiumStatus()
+                    onPurchaseComplete()
                 }
             } else {
-                Log.w("Billing", "❌ queryPurchasesAsync 실패: ${billingResult.debugMessage}")
+                refreshPremiumStatus()
+                onPurchaseComplete()
+            }
+        }
+    }
+
+    fun refreshPremiumStatus() {
+        val params = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.INAPP).build()
+        billingClient.queryPurchasesAsync(params) { _, list ->
+            val isActive = list.any { p ->
+                p.products.contains(PREMIUM_PRODUCT_ID) &&
+                        p.purchaseState == Purchase.PurchaseState.PURCHASED &&
+                        p.isAcknowledged
+            }
+            lifecycleScope.launch {
+                setPremiumUser(isActive)
+                refreshPreferences()
             }
         }
     }

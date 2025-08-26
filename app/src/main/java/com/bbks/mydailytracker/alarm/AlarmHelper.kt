@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import com.bbks.mydailytracker.R
 import com.bbks.mydailytracker.alarm.NotificationReceiver
 import java.util.Calendar
 
@@ -47,7 +48,7 @@ object AlarmHelper {
                     }
                 } else {
                     // 사용자 설정에서 정확한 알람 권한을 수동으로 허용해야 함
-                    Toast.makeText(context, "설정 > 앱 > MyDailyTracker > 알림 허용이 필요합니다", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.alarm_permission_settings), Toast.LENGTH_SHORT).show()
                 }
             } else {
                 alarmManager.setExactAndAllowWhileIdle(

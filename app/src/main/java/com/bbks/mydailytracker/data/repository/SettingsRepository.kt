@@ -69,6 +69,14 @@ class SettingsRepository(private val context: Context) {
         if (storedDate == today) count else 0
     }
 
+    val statsEntryCount: Flow<Int> = context.dataStore.data.map { prefs ->
+        val today = LocalDate.now().toString()
+        val storedDate = prefs[PreferenceKeys.STATSENTRY_DATE]
+        val count = prefs[PreferenceKeys.STATSENTRY_COUNT] ?: 0
+
+        if (storedDate == today) count else 0
+    }
+
     suspend fun incrementDetailEntryCount() {
         context.dataStore.edit { prefs ->
             val today = LocalDate.now().toString()
@@ -77,6 +85,17 @@ class SettingsRepository(private val context: Context) {
 
             prefs[PreferenceKeys.ENTRY_DATE] = today
             prefs[PreferenceKeys.ENTRY_COUNT] = currentCount + 1
+        }
+    }
+
+    suspend fun incrementStatsEntryCount() {
+        context.dataStore.edit { prefs ->
+            val today = LocalDate.now().toString()
+            val storedDate = prefs[PreferenceKeys.STATSENTRY_DATE]
+            val currentCount = if (storedDate == today) prefs[PreferenceKeys.STATSENTRY_COUNT] ?: 0 else 0
+
+            prefs[PreferenceKeys.STATSENTRY_DATE] = today
+            prefs[PreferenceKeys.STATSENTRY_COUNT] = currentCount + 1
         }
     }
 

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.bbks.mydailytracker.alarm.AlarmService
+import kotlinx.coroutines.launch
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -20,6 +21,12 @@ class AlarmReceiver : BroadcastReceiver() {
             context.startForegroundService(serviceIntent)
         } else {
             context.startService(serviceIntent)
+        }
+
+        if (dayOfWeek == 0 && habitId > 0) {
+            kotlinx.coroutines.GlobalScope.launch {
+                OneShotStore.clear(context.applicationContext, habitId)
+            }
         }
     }
 }

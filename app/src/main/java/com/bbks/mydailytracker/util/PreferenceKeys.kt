@@ -14,5 +14,7 @@ object PreferenceKeys {
     val IS_PREMIUM_USER = booleanPreferencesKey("is_premium_user")
     val ENTRY_DATE = stringPreferencesKey("entry_date")
     val ENTRY_COUNT = intPreferencesKey("entry_count")
+    val STATSENTRY_DATE = stringPreferencesKey("statsentry_date")
+    val STATSENTRY_COUNT = intPreferencesKey("statsentry_count")
     val ALARM_VOLUME = floatPreferencesKey("alarm_volume")
 }

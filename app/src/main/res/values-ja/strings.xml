@@ -73,8 +73,13 @@
     <string name="ad_notice_message" />
     <string name="ad_notice_bold">1日の無料アクセス回数 (2回) に達しました。</string>
     <string name="ad_notice_rest">続きを見るには広告を視聴してください。</string>
+    <string name="ad_statsnotice_bold">1日のアクセス制限（1回）に達しました。</string>
+    <string name="ad_statsnotice_rest">統計画面に進むには広告を視聴してください。</string>
     <string name="upgrade_to_premium">プレミアムにアップグレード</string>
-    <string name="ads_unavailable">広告を読み込めませんでした。もう一度お試しください。</string>
+    <string name="ads_unavailable">広告がないため、そのまま入場します。</string>
+    <string name="alarm_permission_required">正確なアラーム権限が必要です。</string>
+    <string name="alarm_permission_disabled">正確なアラーム権限が無効になっています。</string>
+    <string name="alarm_permission_settings">設定 &gt; アプリ &gt; MyDailyTracker &gt; 通知を許可してください。</string>
     <string name="loading">読み込み中…</string>
     <string name="save">保存</string>
     <string name="config">設定</string>
