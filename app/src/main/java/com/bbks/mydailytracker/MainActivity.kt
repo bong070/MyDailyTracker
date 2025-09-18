@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.bbks.mydailytracker.alarm.AlarmService
 import com.bbks.mydailytracker.billing.BillingLauncher
+import com.bbks.mydailytracker.billing.PremiumSync
 import com.bbks.mydailytracker.data.db.HabitDatabase
 import com.bbks.mydailytracker.data.repository.HabitRepository
 import com.bbks.mydailytracker.data.repository.SettingsRepository
@@ -38,31 +39,46 @@ import com.bbks.mydailytracker.ui.screen.HabitTrackerScreen
 import com.bbks.mydailytracker.ui.screen.LockedContentScreen
 import com.bbks.mydailytracker.util.RewardedAdController
 import kotlin.jvm.java
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import android.provider.Settings
+import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: HabitViewModel
     private lateinit var billingLauncher: BillingLauncher
     private lateinit var rewardedAdController: RewardedAdController
+    private lateinit var premiumSync: PremiumSync
+    private val reqCalendarPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            if (!shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CALENDAR)) {
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
 
+        if (ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.READ_CALENDAR
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            reqCalendarPermission.launch(android.Manifest.permission.READ_CALENDAR)
+        }
 
-        // TODO: v1.1부터는 fallbackToDestructiveMigration 제거하고 마이그레이션 정의할 것
-        val db = Room.databaseBuilder(
-            applicationContext,
-            HabitDatabase::class.java,
-            "habits.db"
-        ).fallbackToDestructiveMigration().build()
-
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(android.Manifest.permission.VIBRATE),
-            0
-        )
+        val db = HabitDatabase.getDatabase(applicationContext)
 
         val habitDao = db.habitDao()
         val habitCheckDao = db.habitCheckDao()
@@ -76,6 +92,14 @@ class MainActivity : ComponentActivity() {
         //rewardedAdController = RewardedAdController(this, "ca-app-pub-2864557421723275/4196668759") //테스트용
         rewardedAdController = RewardedAdController(this, "ca-app-pub-7350776421233026/7085582206")
         rewardedAdController.loadAd()
+
+        premiumSync = PremiumSync(
+            app = application,
+            premiumProductId = "premium_upgrade",
+            setPremium = { active -> viewModel.setPremiumUser(active) },
+            refreshPreferences = { viewModel.refreshPreferences() }
+        )
+        premiumSync.init()   // 앱 시작 + 포그라운드 복귀 때 자동 동기화
 
         setContent {
             MyDailyTrackerTheme {

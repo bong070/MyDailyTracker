@@ -61,6 +61,9 @@ class HabitViewModel(
     private val _isPremiumUser = MutableStateFlow(false)
     val isPremiumUser: StateFlow<Boolean> = _isPremiumUser
 
+    private val _alarmVolume = MutableStateFlow(0.5f)
+    val alarmVolume: StateFlow<Float> = _alarmVolume
+
     val detailEntryCount: StateFlow<Int> = settingsRepository.detailEntryCount
         .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), 0)
 
@@ -189,10 +192,10 @@ class HabitViewModel(
                 habitCheckDao.insertHabitCheck(newCheck)
                 _habitChecks.update { it + (habit.id to newCheck) }
             } else {
-                habitCheckDao.deleteChecksForHabit(habit.id)
-                _habitChecks.update { it - habit.id }
+                val updated = existing.copy(isCompleted = !existing.isCompleted)
+                habitCheckDao.updateHabitCheck(updated)
+                _habitChecks.update { it + (habit.id to updated) }
             }
-
             refreshHabitChecks(_habits.value)
         }
     }
@@ -351,9 +354,6 @@ class HabitViewModel(
     fun overridePremiumUserForDebug(value: Boolean) {
         _isPremiumUser.value = value // 그냥 메모리에서만 세팅
     }
-
-    private val _alarmVolume = MutableStateFlow(0.5f)
-    val alarmVolume: StateFlow<Float> = _alarmVolume
 
     fun setAlarmVolume(value: Float) {
         _alarmVolume.value = value

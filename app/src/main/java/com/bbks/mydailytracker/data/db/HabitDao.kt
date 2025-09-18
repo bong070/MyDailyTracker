@@ -28,4 +28,10 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits WHERE id = :habitId")
     fun getHabitByIdFlow(habitId: Int): Flow<Habit?>
+
+    @Insert
+    suspend fun insertAndReturnId(habit: Habit): Long
+
+    @Query("SELECT COALESCE(MAX(order_index), 0) FROM habits")
+    suspend fun getMaxOrderIndex(): Int
 }

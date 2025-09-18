@@ -11,6 +11,7 @@ import com.bbks.mydailytracker.util.ResetLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.bbks.mydailytracker.domain.usecase.CalendarSyncUseCase
 
 class ResetService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -21,6 +22,13 @@ class ResetService : Service() {
             )
             val resetLogic = HabitResetLogic(applicationContext, habitRepo)
             resetLogic.executeReset()
+            val created = CalendarSyncUseCase(
+                applicationContext,
+                db.habitDao(),
+                db.habitCheckDao()
+            ).syncToday()
+
+            ResetLogger.log(applicationContext, "CalendarSync created habits = $created")
             ResetLogger.logResetTime(applicationContext)
             ResetLogger.log(applicationContext, "ResetService executeReset() 완료")
             ResetAlarmHelper.scheduleDailyResetAlarm(applicationContext)
