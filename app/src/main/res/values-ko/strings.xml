@@ -101,7 +101,7 @@
     <string name="afternoon_notification">오늘 하루의 절반이 지났어요! 지금 하나라도 체크해볼까요?</string>
     <string name="evening_notification">하루가 끝나기 전에 목표들을 다시 한 번 확인해요!</string>
     <string name="onboarding_title">환영합니다!</string>
-    <string name="onboarding_body">하루 습관을 기록하고\n꾸준함을 눈으로 확인해보세요.\n새로운 목표 등록 후 선택하면 알람, 반복요일 등을 설정 할 수 있습니다.\n목표를 꾹 눌러 순서를 바꿀 수 있습니다\n통계페이지는 주간/월간 통계를 보여줍니다.</string>
+    <string name="onboarding_body">하루 습관을 기록하고\n꾸준함을 눈으로 확인해보세요.\n새로운 목표 등록 후 선택하면 알람, 반복요일 등을 설정 할 수 있습니다.\n목표를 꾹 눌러 순서를 바꿀 수 있습니다\n통계페이지는 주간/월간 통계를 보여줍니다.\n\n※ 캘린더 권한 안내\n- 일일 리셋 시 기기 안에서만 캘린더 일정을 읽어 목표로 자동 추가합니다.\n- 캘린더 데이터는 외부로 전송되지 않습니다.</string>
     <string name="onboarding_start">시작하기</string>
 
     <!-- Days -->

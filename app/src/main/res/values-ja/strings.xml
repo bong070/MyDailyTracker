@@ -88,7 +88,7 @@
     <string name="afternoon_notification">今日は一日の半分が過ぎました！今すぐ一つでもチェックしてみましょう！</string>
     <string name="evening_notification">一日が終わる前に目標をもう一度確認しましょう！</string>
     <string name="onboarding_title">ようこそ！</string>
-    <string name="onboarding_body">毎日の習慣を記録して\n継続状況を一目で確認しましょう。\n新しい目標を追加した後、アラームや繰り返し曜日を設定できます。\n長押しで目標の順番を変更できます。\n統計ページでは週別・月別の統計が表示されます。</string>
+    <string name="onboarding_body">毎日の習慣を記録して\n継続状況を一目で確認しましょう。\n新しい目標を追加した後、アラームや繰り返し曜日を設定できます。\n長押しで目標の順番を変更できます。\n統計ページでは週別・月別の統計が表示されます。\n\n※ カレンダー権限の案内\n- 日次リセット時に端末内でのみカレンダー予定を読み取り、習慣として自動追加します。\n- カレンダーのデータがサーバーに送信されることはありません。</string>
     <string name="onboarding_start">はじめる</string>
     <string name="day_mon_short">月</string>
     <string name="day_tue_short">火</string>

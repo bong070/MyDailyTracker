@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.bbks.mydailytracker"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.bbks.mydailytracker"
         minSdk = 24
         targetSdk = 35
-        versionCode = 26
-        versionName = "1.0.3"
+        versionCode = 27
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
-    implementation("androidx.compose.ui:ui-graphics:1.6.1")
+    implementation("androidx.compose.ui:ui-graphics")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("androidx.lifecycle:lifecycle-process:2.8.4")
@@ -78,10 +78,17 @@ dependencies {
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.navigation:navigation-compose:2.7.5")
-    implementation("androidx.compose.material:material-icons-extended:1.6.1")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation("com.android.billingclient:billing:7.0.0")
+
+    // Fragment를 최소 1.3.0 이상(권장 최신)으로 명시 고정
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
+
+    // Activity Result 관련 API도 최신 계열 권장 (compose 쪽도 함께 올림)
+    implementation("androidx.activity:activity-ktx:1.11.0")
+    implementation("androidx.activity:activity-compose:1.11.0")
     kapt(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

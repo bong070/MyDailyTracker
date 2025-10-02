@@ -100,7 +100,7 @@
     <string name="afternoon_notification">Half the day is over! Why not check off at least one habit?</string>
     <string name="evening_notification">Before the day ends, take a moment to review your habits!</string>
     <string name="onboarding_title">Welcome!</string>
-    <string name="onboarding_body">Track your daily habits\nand see your consistency at a glance.\nAfter adding a new habit, you can set alarms and repeating days by clicking habit.\nLong-press habits to reorder them.\nThe statistics page shows weekly/monthly stats.</string>
+    <string name="onboarding_body">Track your daily habits\nand see your consistency at a glance.\nAfter adding a new habit, you can set alarms and repeating days by clicking habit.\nLong-press habits to reorder them.\nThe statistics page shows weekly/monthly stats.\n\n※ Calendar permission notice\n- At daily reset, the app only reads your device’s calendar locally to auto-add events as habits.\n- Your calendar data is never sent to any server.</string>
     <string name="onboarding_start">Get Started</string>
 
     <string name="day_mon_short">M</string>

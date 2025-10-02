@@ -26,7 +26,7 @@ abstract class HabitDatabase : RoomDatabase() {
                     context.applicationContext,
                     HabitDatabase::class.java,
                     "habits.db"
-                ).build()
+                ).fallbackToDestructiveMigrationFrom(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13).build()
                 INSTANCE = instance
                 instance
             }
