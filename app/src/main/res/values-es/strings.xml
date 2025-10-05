@@ -88,7 +88,7 @@
     <string name="afternoon_notification">¡La mitad del día ha pasado! ¿Por qué no marcas al menos uno?</string>
     <string name="evening_notification">¡Revisa tus metas antes de que termine el día!</string>
     <string name="onboarding_title">¡Bienvenido!</string>
-    <string name="onboarding_body">Registra tus hábitos diarios\ny observa tu constancia fácilmente.\nDespués de agregar un nuevo objetivo, puedes configurar alarmas y días repetitivos.\nMantén presionado un objetivo para cambiar su orden.\nLa página de estadísticas muestra estadísticas semanales y mensuales.\n\n※ Aviso sobre permisos de calendario\n- Durante el reinicio diario, solo se leen los eventos del calendario localmente en el dispositivo y se añaden automáticamente como hábitos.\n- Los datos del calendario nunca se envían a ningún servidor.</string>
+    <string name="onboarding_body">Registra tus hábitos diarios\ny observa tu constancia fácilmente.\nDespués de agregar un nuevo objetivo, puedes configurar alarmas y días repetitivos.\nMantén presionado un objetivo para cambiar su orden.\nLa página de estadísticas muestra estadísticas semanales y mensuales.\n\n<b>NOTE:</b> Aviso sobre permisos de calendario\n- Durante el reinicio diario, solo se leen los eventos del calendario localmente en el dispositivo y se añaden automáticamente como hábitos.\n- Los datos del calendario nunca se envían a ningún servidor.</string>
     <string name="onboarding_start">Comenzar</string>
     <string name="day_mon_short">L</string> <!-- Lunes -->
     <string name="day_tue_short">M</string> <!-- Martes -->
