@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "daily_habit_results",
-    indices = [Index(value = ["date"]), Index(value = ["habitId"])]
+    indices = [Index(value = ["habitId", "date"], unique = true), Index(value = ["date"]), Index(value = ["habitId"])]
 )
 data class DailyHabitResult(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

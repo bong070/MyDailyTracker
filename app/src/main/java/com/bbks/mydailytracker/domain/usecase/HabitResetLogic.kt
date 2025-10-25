@@ -31,7 +31,8 @@ class HabitResetLogic(
 
         for (habit in allHabits) {
             val check = habitRepository.getCheckForHabit(habit.id, todayStr)
-            val wasChecked = check != null
+            val wasChecked = check?.isCompleted ?: false
+            Log.d("HabitResetLogic wasChecked", "$wasChecked")
 
             // ✅ 1. 성공/실패 기록 저장 (예: HabitDailyResult 테이블로)
             habitRepository.saveDailyResult(habit.id, todayStr, wasChecked, habit.name)
@@ -46,14 +47,9 @@ class HabitResetLogic(
             // ✅ 3. 반복 요일 있는 습관 → 내일이 지정 요일이면 자동 체크 생성 또는 초기화
             if (habit.repeatDays.contains(tomorrowDayOfWeek)) {
                 val checkTomorrow = habitRepository.getCheckForHabit(habit.id, tomorrowStr)
-                if (checkTomorrow == null) {
-                    val newCheck = HabitCheck(habit.id, tomorrowStr, false)
-                    habitRepository.insertHabitCheck(newCheck)
-                } else {
-                    // 이미 있으면 체크 상태 초기화
-                    val resetCheck = checkTomorrow.copy(isCompleted = false)
-                    habitRepository.insertHabitCheck(resetCheck)
-                }
+                val toSave = (checkTomorrow ?: HabitCheck(habit.id, tomorrowStr, false))
+                    .copy(isCompleted = false)
+                habitRepository.insertHabitCheck(toSave)
             }
         }
         prefs.edit().putString("last_reset_date", LocalDate.now().toString()).apply()
